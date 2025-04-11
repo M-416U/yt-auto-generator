@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>YouTube Auto Generator</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome for icons -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <style>
+      /* Custom styles that might not be covered by Tailwind */
+      .flash-container {
+        position: fixed;
+        top: 1rem;
+        right: 1rem;
+        z-index: 50;
+      }
+    </style>
+  </head>
+  <body class="bg-gray-100 font-sans">
+    <div class="flex h-screen">
+      <!-- Sidebar -->
+      <div class="w-64 bg-gray-800 text-white shadow-lg">
+        <div class="p-4">
+          <h1 class="text-2xl font-bold mb-6">YT Auto Generator</h1>
+          <nav class="space-y-2">
+            <a
+              href="{{ url_for('index') }}"
+              class="flex items-center p-3 text-gray-300 hover:bg-gray-700 rounded-lg transition-colors"
+            >
+              <i class="fas fa-home mr-3"></i>
+              <span>Home</span>
+            </a>
+            <a
+              href="{{ url_for('new_video') }}"
+              class="flex items-center p-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
+            >
+              <i class="fas fa-plus mr-3"></i>
+              <span>Create New Video</span>
+            </a>
+            <a
+              href="{{ url_for('youtube_accounts') }}"
+              class="flex items-center p-3 text-gray-300 hover:bg-gray-700 rounded-lg transition-colors"
+            >
+              <i class="fab fa-youtube mr-3"></i>
+              <span>YouTube Channels</span>
+            </a>
+          </nav>
+        </div>
+      </div>
+
+      <!-- Main Content -->
+      <div class="flex-1 overflow-auto">
+        <div class="p-6">
+          <!-- Flash Messages -->
+          <div class="flash-container">
+            {% with messages = get_flashed_messages(with_categories=true) %} {%
+            if messages %} {% for category, message in messages %}
+            <div
+              class="flash p-4 mb-3 rounded-lg shadow-md {% if category == 'success' %}bg-green-100 text-green-800 border-green-200{% elif category == 'error' %}bg-red-100 text-red-800 border-red-200{% else %}bg-blue-100 text-blue-800 border-blue-200{% endif %} relative"
+            >
+              <div class="flex items-center pr-6">
+                {% if category == 'success' %}
+                <i class="fas fa-check-circle mr-2"></i>
+                {% elif category == 'error' %}
+                <i class="fas fa-exclamation-circle mr-2"></i>
+                {% else %}
+                <i class="fas fa-info-circle mr-2"></i>
+                {% endif %} {{ message }}
+              </div>
+              <button
+                onclick="this.parentElement.remove()"
+                class="absolute top-4 right-4 text-gray-500 hover:text-gray-700"
+              >
+                <i class="fas fa-times"></i>
+              </button>
+            </div>
+            {% endfor %} {% endif %} {% endwith %}
+          </div>
+
+          <!-- Content Block -->
+          <div class="container mx-auto">{% block content %}{% endblock %}</div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

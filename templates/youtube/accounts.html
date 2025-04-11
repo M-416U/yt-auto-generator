@@ -1,0 +1,85 @@
+{% extends "base.html" %} {% block content %}
+<div class="space-y-6">
+  <div class="flex items-center justify-between">
+    <h2 class="text-2xl font-bold text-gray-800">YouTube Channels</h2>
+    <a
+      href="{{ url_for('youtube_auth') }}"
+      class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg flex items-center"
+    >
+      <i class="fab fa-youtube mr-2"></i>
+      Connect New Channel
+    </a>
+  </div>
+
+  {% if accounts %}
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    {% for account in accounts %}
+    <div class="bg-white rounded-lg shadow-md overflow-hidden">
+      <div class="p-6">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-xl font-semibold text-gray-800">
+            {{ account.channel_title }}
+          </h3>
+          <i class="fab fa-youtube text-red-600 text-2xl"></i>
+        </div>
+        <div class="space-y-3">
+          <div class="flex justify-between">
+            <span class="text-gray-600">Subscribers</span>
+            <span class="font-semibold"
+              >{{ account.subscriber_count | format_number }}</span
+            >
+          </div>
+          <div class="flex justify-between">
+            <span class="text-gray-600">Videos</span>
+            <span class="font-semibold">{{ account.video_count }}</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-gray-600">Total Views</span>
+            <span class="font-semibold"
+              >{{ account.view_count | format_number }}</span
+            >
+          </div>
+          {% if account.last_synced %}
+          <div class="text-xs text-gray-500 text-right">
+            Last updated: {{ account.last_synced.strftime('%Y-%m-%d %H:%M') }}
+          </div>
+          {% endif %}
+        </div>
+        <div class="mt-6 space-y-2">
+          <a
+            href="{{ url_for('youtube_account_details', account_id=account.id) }}"
+            class="block w-full text-center bg-gray-100 hover:bg-gray-200 text-gray-800 py-2 rounded-lg"
+          >
+            View Details
+          </a>
+          <a
+            href="{{ url_for('youtube_accounts') }}"
+            class="block w-full text-center bg-blue-50 hover:bg-blue-100 text-blue-600 py-2 rounded-lg"
+          >
+            <i class="fas fa-sync-alt mr-2"></i>Refresh Stats
+          </a>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="bg-white rounded-lg shadow-md p-8 text-center">
+    <i class="fab fa-youtube text-red-600 text-5xl mb-4"></i>
+    <h3 class="text-xl font-semibold text-gray-800 mb-2">
+      No YouTube Channels Connected
+    </h3>
+    <p class="text-gray-600 mb-6">
+      Connect your YouTube channel to start managing your content
+    </p>
+    <a
+      href="{{ url_for('youtube_auth') }}"
+      class="inline-block bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-lg"
+    >
+      <i class="fab fa-youtube mr-2"></i>
+      Connect YouTube Channel
+    </a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

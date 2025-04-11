@@ -1,0 +1,304 @@
+{% extends 'base.html' %} {% block content %}
+<div class="bg-white shadow-md rounded-lg p-6">
+  <h2 class="text-2xl font-bold mb-6 text-gray-800">
+    Add Captions to "{{ video.title }}"
+  </h2>
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <!-- Settings Panel -->
+    <form method="POST" class="space-y-6" id="captionForm">
+      <div class="bg-gray-50 rounded-lg p-4">
+        <h3 class="text-lg font-medium text-gray-800 mb-4">Caption Settings</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div class="space-y-4">
+            <div>
+              <label
+                for="max_words"
+                class="block text-sm font-medium text-gray-700"
+              >
+                Maximum Words Per Caption:
+              </label>
+              <input
+                type="number"
+                id="max_words"
+                name="max_words"
+                value="1"
+                min="1"
+                max="10"
+                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                oninput="updatePreview()"
+              />
+            </div>
+            <div>
+              <label
+                for="font_size"
+                class="block text-sm font-medium text-gray-700"
+              >
+                Font Size:
+              </label>
+              <input
+                type="number"
+                id="font_size"
+                name="font_size"
+                value="40"
+                min="20"
+                max="80"
+                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                oninput="updatePreview()"
+              />
+            </div>
+          </div>
+          <div>
+            <label
+              for="position"
+              class="block text-sm font-medium text-gray-700"
+            >
+              Caption Position:
+            </label>
+            <select
+              id="position"
+              name="position"
+              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              onchange="updatePreview()"
+            >
+              <option value="bottom">Bottom</option>
+              <option value="top">Top</option>
+              <option value="middle">Middle</option>
+            </select>
+          </div>
+          <div>
+            <div class="flex items-center mb-2">
+              <input
+                type="checkbox"
+                id="enable_highlight"
+                name="enable_highlight"
+                class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                onchange="toggleHighlightOptions(); updatePreview()"
+              />
+              <label
+                for="enable_highlight"
+                class="ml-2 block text-sm text-gray-700"
+              >
+                Highlight Current Word
+              </label>
+            </div>
+            <div id="highlight_options" class="space-y-2 hidden">
+              <div>
+                <label
+                  for="highlight_type"
+                  class="block text-sm font-medium text-gray-700"
+                >
+                  Highlight Type:
+                </label>
+                <select
+                  id="highlight_type"
+                  name="highlight_type"
+                  class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                  onchange="toggleColorInput(); updatePreview()"
+                >
+                  <option value="preset">Preset Colors</option>
+                  <option value="custom">Custom Color</option>
+                </select>
+              </div>
+              <div id="preset_colors" class="space-y-2">
+                <label
+                  for="highlight_color"
+                  class="block text-sm font-medium text-gray-700"
+                >
+                  Preset Colors:
+                </label>
+                <select
+                  id="highlight_color"
+                  name="highlight_color"
+                  class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                  onchange="updatePreview()"
+                >
+                  <option value="yellow">Yellow</option>
+                  <option value="white">White</option>
+                  <option value="red">Red</option>
+                  <option value="blue">Blue</option>
+                  <option value="green">Green</option>
+                </select>
+              </div>
+              <div id="custom_color" class="space-y-2 hidden">
+                <label
+                  for="custom_highlight_color"
+                  class="block text-sm font-medium text-gray-700"
+                >
+                  Custom Color:
+                </label>
+                <input
+                  type="color"
+                  id="custom_highlight_color"
+                  name="custom_highlight_color"
+                  value="#ffff00"
+                  class="mt-1 block w-full h-10 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                  oninput="updatePreview()"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="flex justify-end">
+        <button
+          type="submit"
+          class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+        >
+          <i class="fas fa-closed-captioning mr-2"></i>Generate Captions
+        </button>
+      </div>
+    </form>
+    <!-- Preview Panel -->
+    <div class="bg-gray-50 rounded-lg p-4">
+      <h3 class="text-lg font-medium text-gray-800 mb-4">Live Preview</h3>
+      <div class="relative" id="previewContainer">
+        <!-- Preview wrapper with aspect ratio -->
+        <div
+          class="relative mx-auto"
+          style="width: {% if preview_dimensions.width > 450 %}450{% else %}{{ preview_dimensions.width }}{% endif %}px; 
+                    aspect-ratio: {{ preview_dimensions.width }} / {{ preview_dimensions.height }};"
+        >
+          <!-- Sample image -->
+          <img
+            src="{{ preview_image }}"
+            alt="Preview"
+            class="absolute top-0 left-0 w-full h-full object-cover rounded-lg shadow-md"
+          />
+          <!-- Caption preview -->
+          <div
+            id="captionPreview"
+            class="absolute w-full text-center px-4 transition-all duration-300"
+            style="text-shadow: 2px 2px 2px rgba(0, 0, 0, 0.8)"
+          >
+            <span id="defaultText" class="text-white">Sample caption text</span>
+            <span id="highlightedWord" class="font-bold"></span>
+          </div>
+        </div>
+      </div>
+      <div class="mt-4 space-y-2">
+        <div class="text-sm text-gray-600 mb-2">
+          Original dimensions: {{ preview_dimensions.width }}x{{
+          preview_dimensions.height }}
+          <br />
+          Preview scale: {% if preview_dimensions.width > 450 %}{{ (450 /
+          preview_dimensions.width * 100)|round }}{% else %}100{% endif %}%
+        </div>
+        <button
+          type="button"
+          onclick="changePreviewText()"
+          class="w-full px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
+        >
+          <i class="fas fa-random mr-2"></i>Change Sample Text
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+  const sampleTexts = [
+      "Welcome to this amazing video",
+      "Let's explore something interesting",
+      "This is a sample caption text",
+      "Captions make videos accessible"
+  ];
+  let currentTextIndex = 0;
+
+  function getSampleText(maxWords) {
+      let text = sampleTexts[currentTextIndex];
+      // Split and limit words based on max_words
+      return text.split(' ').slice(0, maxWords).join(' ');
+  }
+
+  function updatePreview() {
+      const position = document.getElementById('position').value;
+      const fontSize = document.getElementById('font_size').value;
+      const enableHighlight = document.getElementById('enable_highlight').checked;
+      const maxWords = parseInt(document.getElementById('max_words').value);
+      const preview = document.getElementById('captionPreview');
+      const defaultTextElement = document.getElementById('defaultText');
+      const highlightedWord = document.getElementById('highlightedWord');
+      const previewContainer = document.getElementById('previewContainer');
+
+      // Update position
+      if (position === 'top') {
+          preview.style.top = '5%';
+          preview.style.bottom = 'auto';
+          preview.style.transform = 'none';
+      } else if (position === 'middle') {
+          preview.style.top = '50%';
+          preview.style.bottom = 'auto';
+          preview.style.transform = 'translateY(-50%)';
+      } else {
+          preview.style.bottom = '5%';
+          preview.style.top = 'auto';
+          preview.style.transform = 'none';
+      }
+
+      // Scale font size based on container width
+      const containerWidth = previewContainer.offsetWidth;
+      const scaleFactor = containerWidth / {{ preview_dimensions.width }};
+      const scaledFontSize = Math.round(fontSize * scaleFactor);
+      preview.style.fontSize = `${scaledFontSize}px`;
+
+      // Update text based on max_words
+      defaultTextElement.textContent = getSampleText(maxWords);
+
+      // Handle highlight
+      if (enableHighlight) {
+          const highlightType = document.getElementById('highlight_type').value;
+          let highlightColor;
+          if (highlightType === 'custom') {
+              highlightColor = document.getElementById('custom_highlight_color').value;
+          } else {
+              highlightColor = document.getElementById('highlight_color').value;
+          }
+          const words = defaultTextElement.textContent.split(' ');
+          const randomIndex = Math.floor(Math.random() * words.length);
+          defaultTextElement.textContent = words.slice(0, randomIndex).join(' ') + ' ';
+          highlightedWord.textContent = words[randomIndex];
+          highlightedWord.style.color = highlightColor;
+          if (randomIndex < words.length - 1) {
+              defaultTextElement.textContent += ' ' + words.slice(randomIndex + 1).join(' ');
+          }
+          highlightedWord.style.display = 'inline';
+      } else {
+          highlightedWord.style.display = 'none';
+          defaultTextElement.textContent = getSampleText(maxWords);
+      }
+  }
+
+  function changePreviewText() {
+      currentTextIndex = (currentTextIndex + 1) % sampleTexts.length;
+      updatePreview();
+  }
+
+  function toggleHighlightOptions() {
+      const highlightEnabled = document.getElementById('enable_highlight').checked;
+      const highlightOptions = document.getElementById('highlight_options');
+      highlightOptions.classList.toggle('hidden', !highlightEnabled);
+  }
+
+  function toggleColorInput() {
+      const highlightType = document.getElementById('highlight_type').value;
+      const presetColors = document.getElementById('preset_colors');
+      const customColor = document.getElementById('custom_color');
+      presetColors.classList.toggle('hidden', highlightType === 'custom');
+      customColor.classList.toggle('hidden', highlightType === 'preset');
+  }
+
+  document.addEventListener('DOMContentLoaded', function() {
+      const controls = ['position', 'font_size', 'enable_highlight', 'highlight_type',
+                       'highlight_color', 'custom_highlight_color', 'max_words'];
+      controls.forEach(id => {
+          const element = document.getElementById(id);
+          if (element) {
+              element.addEventListener('change', updatePreview);
+              element.addEventListener('input', updatePreview);
+          }
+      });
+      updatePreview();
+  });
+
+  window.addEventListener('resize', updatePreview);
+</script>
+{% endblock %}

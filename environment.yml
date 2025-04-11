@@ -1,0 +1,17 @@
+name: video-generator
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.10
+  - pip
+  - pip:
+      - requests
+      - beautifulsoup4
+      - pillow
+      - opencv-python
+      - moviepy
+      - pysrt
+      - urllib3
+      - python-dotenv
+      - tqdm

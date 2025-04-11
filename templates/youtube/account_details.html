@@ -1,0 +1,233 @@
+{% extends "base.html" %} 
+{% block content %}
+<div class="space-y-6">
+  <div class="flex items-center justify-between">
+    <div class="flex items-center">
+      <i class="fab fa-youtube text-red-600 text-3xl mr-3"></i>
+      <h2 class="text-2xl font-bold text-gray-800">
+        {{ account.channel_title }}
+      </h2>
+    </div>
+    <div class="flex items-center gap-4">
+      <button
+        onclick="disconnectChannel({{ account.id }})"
+        class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg flex items-center"
+      >
+        <i class="fas fa-unlink mr-2"></i>
+        Disconnect Channel
+      </button>
+      <a
+        href="{{ url_for('youtube_accounts') }}"
+        class="text-gray-600 hover:text-gray-800 flex items-center"
+      >
+        <i class="fas fa-arrow-left mr-2"></i>
+        Back to Channels
+      </a>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <!-- Channel Statistics -->
+    <div class="bg-white rounded-lg shadow-md overflow-hidden">
+      <div class="p-6">
+        <h3 class="text-xl font-semibold text-gray-800 mb-4">
+          Channel Statistics
+        </h3>
+        <div class="grid grid-cols-2 gap-4">
+          <div class="bg-gray-50 p-4 rounded-lg">
+            <div class="text-sm text-gray-500">Subscribers</div>
+            <div class="text-2xl font-bold text-gray-800">
+              {{ account.subscriber_count | format_number }}
+            </div>
+          </div>
+          <div class="bg-gray-50 p-4 rounded-lg">
+            <div class="text-sm text-gray-500">Videos</div>
+            <div class="text-2xl font-bold text-gray-800">
+              {{ account.video_count }}
+            </div>
+          </div>
+          <div class="bg-gray-50 p-4 rounded-lg">
+            <div class="text-sm text-gray-500">Total Views</div>
+            <div class="text-2xl font-bold text-gray-800">
+              {{ account.view_count | format_number }}
+            </div>
+          </div>
+          <div class="bg-gray-50 p-4 rounded-lg">
+            <div class="text-sm text-gray-500">Connected Since</div>
+            <div class="text-2xl font-bold text-gray-800">
+              {{ account.created_at.strftime('%Y-%m-%d') }}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Analytics Charts -->
+    <div class="bg-white rounded-lg shadow-md overflow-hidden">
+      <div class="p-6">
+        <h3 class="text-xl font-semibold text-gray-800 mb-4">Growth Analytics</h3>
+        <canvas id="subscriberChart" class="w-full h-64 mb-6"></canvas>
+        <canvas id="viewsChart" class="w-full h-64"></canvas>
+      </div>
+    </div>
+
+    <!-- Generated Videos -->
+    <div class="bg-white rounded-lg shadow-md overflow-hidden">
+      <div class="p-6">
+        <h3 class="text-xl font-semibold text-gray-800 mb-4">
+          Generated Videos
+        </h3>
+        {% if account.videos %}
+        <div class="space-y-3">
+          {% for video in account.videos %}
+          <div
+            class="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+          >
+            <div class="flex items-center">
+              <i class="fas fa-video text-gray-400 mr-3"></i>
+              <span class="text-gray-800">{{ video.title }}</span>
+            </div>
+            {% if video.youtube_video_id %}
+            <a
+              href="https://youtube.com/watch?v={{ video.youtube_video_id }}"
+              target="_blank"
+              class="text-red-600 hover:text-red-700"
+            >
+              <i class="fab fa-youtube"></i>
+              View
+            </a>
+            {% else %}
+            <span class="text-gray-400 text-sm">Not uploaded</span>
+            {% endif %}
+          </div>
+          {% endfor %}
+        </div>
+        {% else %}
+        <div class="text-center text-gray-500 py-8">
+          <i class="fas fa-video text-4xl mb-2"></i>
+          <p>No videos generated yet</p>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Upload Performance -->
+    <div class="bg-white rounded-lg shadow-md overflow-hidden">
+      <div class="p-6">
+        <h3 class="text-xl font-semibold text-gray-800 mb-4">Upload Performance</h3>
+        <canvas id="uploadPerformanceChart" class="w-full h-64"></canvas>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Add Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+  // Disconnect channel function
+  function disconnectChannel(accountId) {
+    if (confirm('Are you sure you want to disconnect this YouTube channel?')) {
+      fetch(`/youtube/disconnect/${accountId}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          window.location.href = "{{ url_for('youtube_accounts') }}";
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        alert('Failed to disconnect channel. Please try again.');
+      });
+    }
+  }
+
+  // Sample charts (you'll need to replace with real data)
+  fetch(`/youtube/stats/{{ account.id }}`)
+    .then(response => response.json())
+    .then(data => {
+      // Subscriber Chart
+      new Chart(
+        document.getElementById('subscriberChart'),
+        {
+          type: 'line',
+          data: {
+            labels: data.stats.map(stat => stat.date),
+            datasets: [{
+              label: 'Subscribers',
+              data: data.stats.map(stat => stat.subscribers),
+              borderColor: 'rgb(75, 192, 192)',
+              tension: 0.1,
+              fill: false
+            }]
+          },
+          options: {
+            responsive: true,
+            scales: {
+              y: {
+                beginAtZero: false
+              }
+            }
+          }
+        }
+      );
+  
+      // Views Chart
+      new Chart(
+        document.getElementById('viewsChart'),
+        {
+          type: 'line',
+          data: {
+            labels: data.stats.map(stat => stat.date),
+            datasets: [{
+              label: 'Total Views',
+              data: data.stats.map(stat => stat.views),
+              borderColor: 'rgb(255, 99, 132)',
+              tension: 0.1,
+              fill: false
+            }]
+          },
+          options: {
+            responsive: true,
+            scales: {
+              y: {
+                beginAtZero: false
+              }
+            }
+          }
+        }
+      );
+  
+      // Upload Performance Chart
+      new Chart(
+        document.getElementById('uploadPerformanceChart'),
+        {
+          type: 'bar',
+          data: {
+            labels: data.videos.map(video => video.title),
+            datasets: [{
+              label: 'Views per Video',
+              data: data.videos.map(video => video.views),
+              backgroundColor: 'rgba(54, 162, 235, 0.2)',
+              borderColor: 'rgb(54, 162, 235)',
+              borderWidth: 1
+            }]
+          },
+          options: {
+            responsive: true,
+            scales: {
+              y: {
+                beginAtZero: true
+              }
+            }
+          }
+        }
+      );
+    });
+</script>
+{% endblock %}

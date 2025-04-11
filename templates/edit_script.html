@@ -1,0 +1,116 @@
+{% extends 'base.html' %} {% block content %}
+<div class="bg-white shadow-md rounded-lg p-6">
+  <h2 class="text-2xl font-bold mb-6 text-gray-800">
+    Edit Script for "{{ video.title }}"
+  </h2>
+
+  <form method="POST" class="space-y-6">
+    <div class="space-y-2">
+      <label for="title" class="block text-sm font-medium text-gray-700"
+        >Video Title:</label
+      >
+      <input
+        type="text"
+        id="title"
+        name="title"
+        value="{{ script_data.title }}"
+        required
+        class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+      />
+    </div>
+
+    <div class="space-y-2">
+      <label for="description" class="block text-sm font-medium text-gray-700"
+        >Video Description:</label
+      >
+      <textarea
+        id="description"
+        name="description"
+        rows="3"
+        class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+      >
+{{ script_data.desc }}</textarea
+      >
+    </div>
+
+    <div class="border-t border-gray-200 pt-4">
+      <h3 class="text-lg font-medium text-gray-800 mb-2">
+        Script and Image Prompts
+      </h3>
+      <p class="text-sm text-gray-600 mb-4">
+        Each line of script will be paired with an image prompt for
+        visualization.
+      </p>
+
+      <div class="space-y-4">
+        {% for i in range(script_data.script|length) %}
+        <div class="border border-gray-200 rounded-lg p-4 bg-gray-50">
+          <div class="flex items-center mb-2">
+            <span
+              class="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded"
+              >Line {{ i+1 }}</span
+            >
+          </div>
+
+          <div class="space-y-4">
+            <div class="space-y-2">
+              <label
+                for="script_{{ i }}"
+                class="block text-sm font-medium text-gray-700"
+              >
+                <i class="fas fa-microphone mr-2"></i>Script:
+              </label>
+              <textarea
+                id="script_{{ i }}"
+                name="script_{{ i }}"
+                rows="2"
+                class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+              >
+{{ script_data.script[i] }}</textarea
+              >
+            </div>
+
+            <div class="space-y-2">
+              <label
+                for="asset_{{ i }}"
+                class="block text-sm font-medium text-gray-700"
+              >
+                <i class="fas fa-image mr-2"></i>Image Prompt:
+              </label>
+              <textarea
+                id="asset_{{ i }}"
+                name="asset_{{ i }}"
+                rows="2"
+                class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+              >
+{{ script_data.assets[i] if i < script_data.assets|length else "" }}</textarea
+              >
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- Add this before the Save button -->
+    <div class="flex justify-between pt-4">
+      <button
+        type="submit"
+        name="action"
+        value="regenerate"
+        class="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
+      >
+        <i class="fas fa-sync-alt mr-2"></i>Regenerate Script
+      </button>
+      <button
+        type="submit"
+        name="action"
+        value="save"
+        class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+      >
+        <i class="fas fa-save mr-2"></i>Save Script
+      </button>
+    </div>
+  </form>
+</div>
+{% endblock %}

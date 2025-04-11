@@ -1,0 +1,225 @@
+{% extends 'base.html' %} {% block content %}
+<div class="bg-white shadow-md rounded-lg p-6">
+  <h2 class="text-2xl font-bold mb-6 text-gray-800">
+    Create New Video Project
+  </h2>
+
+  <form method="POST" class="space-y-6">
+    <div class="space-y-2">
+      <label for="topic" class="block text-sm font-medium text-gray-700"
+        >Topic (what the video is about):</label
+      >
+      <input
+        type="text"
+        id="topic"
+        name="topic"
+        required
+        class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+      />
+    </div>
+
+    <div class="space-y-2">
+      <label for="video_type" class="block text-sm font-medium text-gray-700"
+        >Video Type:</label
+      >
+      <select
+        id="video_type"
+        name="video_type"
+        class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+      >
+        <option value="story">Story</option>
+        <option value="facts">Facts</option>
+        <option value="topX">Top X</option>
+      </select>
+    </div>
+
+    <div class="space-y-2">
+      <label for="duration" class="block text-sm font-medium text-gray-700"
+        >Duration (seconds):</label
+      >
+      <input
+        type="number"
+        id="duration"
+        name="duration"
+        value="60"
+        min="10"
+        max="600"
+        class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+      />
+    </div>
+
+    <div class="space-y-2">
+      <label class="block text-sm font-medium text-gray-700"
+        >Image Style:</label
+      >
+      <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 mt-2">
+        {% set styles = [ {'id': 'realistic', 'name': 'Realistic'}, {'id':
+        '3d-render', 'name': '3D Render'}, {'id': 'anime', 'name': 'Anime'},
+        {'id': 'cartoon', 'name': 'Cartoon'}, {'id': 'chibi', 'name': 'Chibi'},
+        {'id': 'cyberpunk', 'name': 'Cyberpunk'}, {'id': 'pixel-art', 'name':
+        'Pixel Art'}, {'id': 'sketch', 'name': 'Sketch'}, {'id': 'watercolor',
+        'name': 'Watercolor'} ] %} {% for style in styles %}
+        <div class="image-style-option">
+          <input type="radio" id="style_{{ style.id }}" name="image_style"
+          value="{{ style.id }}" {% if style.id == 'realistic' %}checked{% endif
+          %} class="hidden peer" />
+          <label
+            for="style_{{ style.id }}"
+            class="cursor-pointer block text-center peer-checked:ring-2 peer-checked:ring-blue-500 rounded-lg overflow-hidden"
+          >
+            <img
+              src="/static/image_styles/{{ style.id }}.jpeg"
+              alt="{{ style.name }}"
+              class="w-full h-24 object-cover"
+            />
+            <span class="block mt-1 text-sm">{{ style.name }}</span>
+          </label>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <div class="space-y-2">
+      <label class="block text-sm font-medium text-gray-700"
+        >Video Dimensions:</label
+      >
+      <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 mt-2">
+        <div class="dimension-option">
+          <input
+            type="radio"
+            id="dim_portrait"
+            name="dimensions"
+            value="720x1280"
+            checked
+            class="hidden peer"
+          />
+          <label
+            for="dim_portrait"
+            class="cursor-pointer block p-4 text-center border rounded-lg peer-checked:ring-2 peer-checked:ring-blue-500 peer-checked:border-blue-500 hover:bg-gray-50"
+          >
+            <i class="fas fa-mobile-alt text-3xl mb-2 text-gray-600"></i>
+            <div class="text-sm font-medium">Portrait</div>
+            <div class="text-xs text-gray-500">720x1280</div>
+            <div class="text-xs text-gray-400">Mobile/Stories</div>
+          </label>
+        </div>
+
+        <div class="dimension-option">
+          <input
+            type="radio"
+            id="dim_landscape"
+            name="dimensions"
+            value="1280x720"
+            class="hidden peer"
+          />
+          <label
+            for="dim_landscape"
+            class="cursor-pointer block p-4 text-center border rounded-lg peer-checked:ring-2 peer-checked:ring-blue-500 peer-checked:border-blue-500 hover:bg-gray-50"
+          >
+            <i class="fas fa-tv text-3xl mb-2 text-gray-600"></i>
+            <div class="text-sm font-medium">Landscape</div>
+            <div class="text-xs text-gray-500">1280x720</div>
+            <div class="text-xs text-gray-400">YouTube/Desktop</div>
+          </label>
+        </div>
+
+        <div class="dimension-option">
+          <input
+            type="radio"
+            id="dim_square"
+            name="dimensions"
+            value="1080x1080"
+            class="hidden peer"
+          />
+          <label
+            for="dim_square"
+            class="cursor-pointer block p-4 text-center border rounded-lg peer-checked:ring-2 peer-checked:ring-blue-500 peer-checked:border-blue-500 hover:bg-gray-50"
+          >
+            <i class="fas fa-square text-3xl mb-2 text-gray-600"></i>
+            <div class="text-sm font-medium">Square</div>
+            <div class="text-xs text-gray-500">1080x1080</div>
+            <div class="text-xs text-gray-400">Instagram/Social</div>
+          </label>
+        </div>
+
+        <div class="dimension-option">
+          <input
+            type="radio"
+            id="dim_vertical"
+            name="dimensions"
+            value="1080x1920"
+            class="hidden peer"
+          />
+          <label
+            for="dim_vertical"
+            class="cursor-pointer block p-4 text-center border rounded-lg peer-checked:ring-2 peer-checked:ring-blue-500 peer-checked:border-blue-500 hover:bg-gray-50"
+          >
+            <i class="fas fa-mobile-alt text-3xl mb-2 text-gray-600"></i>
+            <div class="text-sm font-medium">Vertical</div>
+            <div class="text-xs text-gray-500">1080x1920</div>
+            <div class="text-xs text-gray-400">TikTok/Reels</div>
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <div class="flex items-center justify-between pt-4">
+      <button
+        type="submit"
+        id="submit-btn"
+        name="action"
+        value="create_async"
+        class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+      >
+        <i class="fas fa-rocket mr-2"></i>Create Video Project
+      </button>
+      <div id="loading-indicator" class="hidden items-center">
+        <i class="fas fa-spinner fa-spin text-blue-500 mr-2"></i>
+        <span class="text-gray-600">Creating your video project...</span>
+      </div>
+    </div>
+  </form>
+</div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const form = document.querySelector("form");
+    const submitBtn = document.getElementById("submit-btn");
+    const loadingIndicator = document.getElementById("loading-indicator");
+
+    form.addEventListener("submit", function (e) {
+      e.preventDefault();
+
+      // Get selected dimensions
+      const selectedDimensions = document.querySelector(
+        'input[name="dimensions"]:checked'
+      ).value;
+      const [width, height] = selectedDimensions.split("x");
+
+      // Create hidden inputs for width and height
+      const widthInput = document.createElement("input");
+      widthInput.type = "hidden";
+      widthInput.name = "width";
+      widthInput.value = width;
+
+      const heightInput = document.createElement("input");
+      heightInput.type = "hidden";
+      heightInput.name = "height";
+      heightInput.value = height;
+
+      // Add inputs to form
+      form.appendChild(widthInput);
+      form.appendChild(heightInput);
+
+      // Show loading state
+      submitBtn.disabled = true;
+      submitBtn.classList.add("opacity-50");
+      loadingIndicator.classList.remove("hidden");
+      loadingIndicator.classList.add("flex");
+
+      // Submit the form
+      form.submit();
+    });
+  });
+</script>
+{% endblock %}

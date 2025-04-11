@@ -1,0 +1,78 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="bg-white shadow-md rounded-lg p-6">
+    <h2 class="text-2xl font-bold mb-6 text-gray-800">Create Video for "{{ video.title }}"</h2>
+    
+    <div class="space-y-6">
+        <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <h3 class="text-lg font-medium text-gray-800 mb-4">
+                <i class="fas fa-check-circle text-blue-600 mr-2"></i>Assets Ready
+            </h3>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="bg-white rounded-lg p-4 border border-gray-200">
+                    <div class="flex items-center">
+                        <i class="fas fa-file-alt text-green-500 mr-3 text-xl"></i>
+                        <div>
+                            <h4 class="font-medium text-gray-700">Script</h4>
+                            <span class="text-green-600 text-sm">✅ Ready</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-white rounded-lg p-4 border border-gray-200">
+                    <div class="flex items-center">
+                        <i class="fas fa-images text-green-500 mr-3 text-xl"></i>
+                        <div>
+                            <h4 class="font-medium text-gray-700">Images</h4>
+                            <span class="text-green-600 text-sm">✅ {{ video.images|length }} images ready</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-white rounded-lg p-4 border border-gray-200">
+                    <div class="flex items-center">
+                        <i class="fas fa-volume-up text-green-500 mr-3 text-xl"></i>
+                        <div>
+                            <h4 class="font-medium text-gray-700">Audio</h4>
+                            <span class="text-green-600 text-sm">✅ {{ video.script.audio_duration|round(2) }} seconds</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <form method="POST" class="space-y-4">
+            <div class="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                <p class="text-gray-600 mb-4">Click the button below to create the video from your assets. This process may take a few minutes.</p>
+                <div class="flex items-center">
+                    <button type="submit" id="create-btn"
+                            class="inline-flex items-center px-6 py-3 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                        <i class="fas fa-film mr-2"></i>Create Video
+                    </button>
+                    <div id="loading" class="hidden ml-4">
+                        <div class="inline-block animate-spin rounded-full h-5 w-5 border-b-2 border-blue-600"></div>
+                        <span class="ml-2 text-gray-600">Processing...</span>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.querySelector('form');
+        const createBtn = document.getElementById('create-btn');
+        const loading = document.getElementById('loading');
+        
+        if (form) {
+            form.addEventListener('submit', function() {
+                createBtn.disabled = true;
+                createBtn.classList.add('opacity-50');
+                loading.classList.remove('hidden');
+            });
+        }
+    });
+</script>
+{% endblock %}
