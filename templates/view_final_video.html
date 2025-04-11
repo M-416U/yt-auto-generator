@@ -1,99 +1,24 @@
-{% extends 'base.html' %} {% block content %}
+{% extends 'base.html' %} 
+
+{% block content %}
 <div class="bg-white shadow-md rounded-lg p-6">
   <h2 class="text-2xl font-bold mb-6 text-gray-800">
     Final Video: "{{ video.title }}"
   </h2>
 
   <div class="space-y-6">
-    <div class="relative group">
-      <!-- Video container -->
-      <div
-        class="relative aspect-video bg-black rounded-lg overflow-hidden"
-        style="width: {% if video.width > 450 %}450{% else %}{{ video.width }}{% endif %}px; 
-                    aspect-ratio: {{ video.width }} / {{ video.height }};"
-      >
-        {% set video_path = 'output/video_' + video.id|string + '_with_subs.mp4'
-        %} {% if not video_path|file_exists %} {% set video_path =
-        'output/video_' + video.id|string + '.mp4' %} {% endif %}
-        <video id="videoPlayer" class="w-full h-full">
-          <source src="{{ video_url }}" type="video/mp4" />
-          Your browser does not support the video tag.
-        </video>
-
-        <!-- Play/Pause big button overlay -->
-        <button
-          id="bigPlayButton"
-          class="absolute inset-0 w-full h-full flex items-center justify-center"
-        >
-          <i
-            class="fas fa-play text-white text-6xl opacity-80 hover:opacity-100 transition-opacity"
-          ></i>
-        </button>
-
-        <!-- Controls overlay -->
-        <div
-          class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-4 opacity-0 group-hover:opacity-100 transition-opacity"
-        >
-          <!-- Progress bar -->
-          <div
-            class="relative h-1 bg-gray-600 rounded cursor-pointer mb-2"
-            id="progressBar"
-          >
-            <div
-              class="absolute h-full bg-blue-500 rounded"
-              id="progress"
-            ></div>
-            <div
-              class="absolute h-3 w-3 bg-white rounded-full -top-1 hidden"
-              id="progressHandle"
-            ></div>
-          </div>
-
-          <!-- Controls -->
-          <div class="flex items-center justify-between text-white">
-            <div class="flex items-center space-x-4">
-              <button
-                id="playPauseBtn"
-                class="hover:text-blue-400 transition-colors"
-              >
-                <i class="fas fa-play"></i>
-              </button>
-              <div class="flex items-center space-x-2">
-                <button
-                  id="volumeBtn"
-                  class="hover:text-blue-400 transition-colors"
-                >
-                  <i class="fas fa-volume-up"></i>
-                </button>
-                <div
-                  class="w-20 h-1 bg-gray-600 rounded cursor-pointer"
-                  id="volumeBar"
-                >
-                  <div
-                    class="h-full bg-blue-500 rounded"
-                    id="volumeLevel"
-                    style="width: 100%"
-                  ></div>
-                </div>
-              </div>
-              <span class="text-sm">
-                <span id="currentTime">0:00</span> /
-                <span id="duration">0:00</span>
-              </span>
-            </div>
-            <div class="flex items-center space-x-4">
-              <button
-                id="fullscreenBtn"
-                class="hover:text-blue-400 transition-colors"
-              >
-                <i class="fas fa-expand"></i>
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
+    {% set video_path = 'output/video_' + video.id|string + '_with_subs.mp4' %}
+    {% if not video_path|file_exists %}
+      {% set video_path = 'output/video_' + video.id|string + '.mp4' %}
+    {% endif %}
+    
+    {% set video_src = video_url %}
+    {% set video_type = 'video/mp4' %}
+    {% set container_class = 'aspect-video' %}
+    {% set container_style = 'width: ' ~ (video.width > 450 ? '450' : video.width) ~ 'px; aspect-ratio: ' ~ video.width ~ ' / ' ~ video.height ~ ';' %}
+    
+    {% include 'components/video_player.html' with context %}
+    
     <!-- Download button -->
     <div class="flex justify-center">
       <a
@@ -105,110 +30,4 @@
     </div>
   </div>
 </div>
-
-<script>
-  const video = document.getElementById("videoPlayer");
-  const bigPlayButton = document.getElementById("bigPlayButton");
-  const playPauseBtn = document.getElementById("playPauseBtn");
-  const volumeBtn = document.getElementById("volumeBtn");
-  const volumeBar = document.getElementById("volumeBar");
-  const volumeLevel = document.getElementById("volumeLevel");
-  const progressBar = document.getElementById("progressBar");
-  const progress = document.getElementById("progress");
-  const progressHandle = document.getElementById("progressHandle");
-  const currentTime = document.getElementById("currentTime");
-  const durationSpan = document.getElementById("duration");
-  const fullscreenBtn = document.getElementById("fullscreenBtn");
-
-  // Format time in seconds to MM:SS
-  function formatTime(seconds) {
-    const minutes = Math.floor(seconds / 60);
-    seconds = Math.floor(seconds % 60);
-    return `${minutes}:${seconds.toString().padStart(2, "0")}`;
-  }
-
-  // Play/Pause functionality
-  function togglePlay() {
-    if (video.paused) {
-      video.play();
-      bigPlayButton.style.display = "none";
-      playPauseBtn.innerHTML = '<i class="fas fa-pause"></i>';
-    } else {
-      video.pause();
-      bigPlayButton.style.display = "flex";
-      playPauseBtn.innerHTML = '<i class="fas fa-play"></i>';
-    }
-  }
-
-  bigPlayButton.addEventListener("click", togglePlay);
-  playPauseBtn.addEventListener("click", togglePlay);
-  video.addEventListener("click", togglePlay);
-
-  // Update progress bar
-  video.addEventListener("timeupdate", () => {
-    const percentage = (video.currentTime / video.duration) * 100;
-    progress.style.width = `${percentage}%`;
-    currentTime.textContent = formatTime(video.currentTime);
-  });
-
-  video.addEventListener("loadedmetadata", () => {
-    durationSpan.textContent = formatTime(video.duration);
-  });
-
-  // Progress bar seeking
-  progressBar.addEventListener("click", (e) => {
-    const rect = progressBar.getBoundingClientRect();
-    const pos = (e.clientX - rect.left) / progressBar.offsetWidth;
-    video.currentTime = pos * video.duration;
-  });
-
-  // Volume control
-  let lastVolume = 1;
-  volumeBtn.addEventListener("click", () => {
-    if (video.volume > 0) {
-      lastVolume = video.volume;
-      video.volume = 0;
-      volumeBtn.innerHTML = '<i class="fas fa-volume-mute"></i>';
-      volumeLevel.style.width = "0%";
-    } else {
-      video.volume = lastVolume;
-      volumeBtn.innerHTML = '<i class="fas fa-volume-up"></i>';
-      volumeLevel.style.width = `${lastVolume * 100}%`;
-    }
-  });
-
-  volumeBar.addEventListener("click", (e) => {
-    const rect = volumeBar.getBoundingClientRect();
-    const pos = (e.clientX - rect.left) / volumeBar.offsetWidth;
-    video.volume = Math.max(0, Math.min(1, pos));
-    volumeLevel.style.width = `${video.volume * 100}%`;
-    volumeBtn.innerHTML =
-      video.volume === 0
-        ? '<i class="fas fa-volume-mute"></i>'
-        : '<i class="fas fa-volume-up"></i>';
-  });
-
-  // Fullscreen
-  fullscreenBtn.addEventListener("click", () => {
-    if (!document.fullscreenElement) {
-      video.parentElement.requestFullscreen();
-      fullscreenBtn.innerHTML = '<i class="fas fa-compress"></i>';
-    } else {
-      document.exitFullscreen();
-      fullscreenBtn.innerHTML = '<i class="fas fa-expand"></i>';
-    }
-  });
-
-  document.addEventListener("fullscreenchange", () => {
-    fullscreenBtn.innerHTML = document.fullscreenElement
-      ? '<i class="fas fa-compress"></i>'
-      : '<i class="fas fa-expand"></i>';
-  });
-
-  // Hide big play button when video ends
-  video.addEventListener("ended", () => {
-    bigPlayButton.style.display = "flex";
-    playPauseBtn.innerHTML = '<i class="fas fa-play"></i>';
-  });
-</script>
 {% endblock %}

@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="bg-white shadow-md rounded-lg p-6">
+    <h2 class="text-2xl font-bold mb-6 text-gray-800">YouTube Video Segments</h2>
+
+    <div class="mb-6">
+        <h3 class="text-lg font-medium text-gray-800 mb-2">Source Video</h3>
+        <div class="bg-gray-50 p-4 rounded-lg">
+            <p class="text-gray-600">URL: <a href="{{ source.url }}" target="_blank" class="text-blue-600 hover:underline">{{ source.url }}</a></p>
+            <p class="text-gray-600">Language: {{ source.language }}</p>
+            <p class="text-gray-600">Created: {{ source.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</p>
+        </div>
+    </div>
+
+    {% if source.videos %}
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {% for video in source.videos %}
+                <div class="bg-white border rounded-lg shadow-sm hover:shadow-md transition-shadow">
+                    <div class="p-4">
+                        <h3 class="text-lg font-medium text-gray-800 mb-2">{{ video.title }}</h3>
+                        <p class="text-sm text-gray-600 mb-4">{{ video.description }}</p>
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm text-gray-500">{{ video.duration }}s</span>
+                            <a href="{{ url_for('view_video', video_id=video.id) }}" 
+                               class="text-blue-600 hover:text-blue-800">View Details</a>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="text-center py-8">
+            <p class="text-gray-600">Processing video segments...</p>
+            <div class="mt-4">
+                <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

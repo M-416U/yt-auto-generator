@@ -1,0 +1,195 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="bg-white shadow-md rounded-lg p-6">
+  <div class="flex justify-between items-center mb-6">
+    <h2 class="text-2xl font-bold text-gray-800">
+      Shorts for: {{ source.title or "YouTube Video" }}
+    </h2>
+    <a href="{{ source.url }}" target="_blank" class="text-blue-600 hover:text-blue-800">
+      <i class="fas fa-external-link-alt mr-1"></i> View Original
+    </a>
+  </div>
+
+  {% if shorts|length == 0 %}
+    <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
+      <div class="flex items-start space-x-3">
+        <div class="flex-shrink-0">
+          <i class="fas fa-spinner fa-spin text-yellow-500 mt-1"></i>
+        </div>
+        <div>
+          <h3 class="text-yellow-800 font-medium mb-1">Analysis in Progress</h3>
+          <p class="text-yellow-700 text-sm">
+            We're analyzing the video to find the most engaging segments. This may take a few minutes.
+            Please refresh the page in a moment.
+          </p>
+        </div>
+      </div>
+    </div>
+  {% else %}
+    <div class="mb-6 flex justify-between items-center">
+      <div>
+        <span class="text-gray-700 font-medium">Found {{ shorts|length }} potential shorts</span>
+        <span class="ml-2 text-sm text-gray-500">
+          ({{ shorts|selectattr('selected', 'eq', true)|list|length }} selected)
+        </span>
+      </div>
+      <form method="POST" action="{{ url_for('generate_shorts', source_id=source.id) }}">
+        <button type="submit" class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700">
+          <i class="fas fa-cut mr-2"></i>Generate Selected Shorts
+        </button>
+      </form>
+    </div>
+
+    <div class="flex flex-col md:flex-row gap-6">
+      <!-- Shorts list -->
+      <div class="md:w-2/3 grid grid-cols-1 md:grid-cols-2 gap-6">
+        {% for short in shorts %}
+          <div class="border rounded-lg overflow-hidden bg-white shadow-sm hover:shadow-md transition-shadow 
+                      {% if selected_short_id and selected_short_id == short.id %}border-blue-500 ring-2 ring-blue-300{% endif %}"
+               id="short-card-{{ short.id }}">
+            <div class="p-4 border-b">
+              <div class="flex justify-between items-start">
+                <h3 class="font-bold text-lg text-gray-800">{{ short.title }}</h3>
+                <div class="flex items-center">
+                  <span class="inline-block px-2 py-1 text-xs font-semibold rounded-full 
+                    {% if short.viral_score >= 80 %}bg-green-100 text-green-800
+                    {% elif short.viral_score >= 60 %}bg-blue-100 text-blue-800
+                    {% else %}bg-gray-100 text-gray-800{% endif %}">
+                    {{ short.viral_score }}/100
+                  </span>
+                  <label class="ml-2 relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" class="sr-only peer toggle-short" 
+                           data-short-id="{{ short.id }}" 
+                           {% if short.selected %}checked{% endif %}>
+                    <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 
+                                peer-focus:ring-blue-300 rounded-full peer 
+                                peer-checked:after:translate-x-full peer-checked:after:border-white 
+                                after:content-[''] after:absolute after:top-[2px] after:left-[2px] 
+                                after:bg-white after:border-gray-300 after:border after:rounded-full 
+                                after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                  </label>
+                </div>
+              </div>
+              <p class="text-sm text-gray-600 mt-1">{{ short.duration_seconds }} seconds</p>
+            </div>
+            
+            <div class="p-4 bg-gray-50">
+              <div class="mb-3">
+                <h4 class="text-sm font-medium text-gray-700">Description:</h4>
+                <p class="text-sm text-gray-600">{{ short.description }}</p>
+              </div>
+              
+              <div class="mb-3">
+                <h4 class="text-sm font-medium text-gray-700">Hook:</h4>
+                <p class="text-sm text-gray-600">{{ short.hook }}</p>
+              </div>
+              
+              <div class="mb-3">
+                <h4 class="text-sm font-medium text-gray-700">Viral Potential:</h4>
+                <p class="text-sm text-gray-600">{{ short.viral_potential }}</p>
+              </div>
+              
+              <div>
+                <h4 class="text-sm font-medium text-gray-700">Hashtags:</h4>
+                <div class="flex flex-wrap gap-1 mt-1">
+                  {% for hashtag in short.hashtags|fromjson %}
+                    <span class="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">
+                      #{{ hashtag }}
+                    </span>
+                  {% endfor %}
+                </div>
+              </div>
+            </div>
+            
+            <div class="p-4 border-t">
+              <div class="flex items-center justify-between">
+                <div>
+                  <span class="text-sm text-gray-600">
+                    {{ short.start_time|round|int }}s - {{ short.end_time|round|int }}s
+                  </span>
+                </div>
+                
+                {% if short.status == 'completed' %}
+                  <a href="{{ url_for('view_short_in_source', source_id=source.id, short_id=short.id) }}" 
+                     class="text-blue-600 hover:text-blue-800">
+                    <i class="fas fa-play-circle mr-1"></i> View Short
+                  </a>
+                {% elif short.status == 'processing' %}
+                  <span class="text-yellow-600">
+                    <i class="fas fa-spinner fa-spin mr-1"></i> Processing
+                  </span>
+                {% elif short.status == 'failed' %}
+                  <span class="text-red-600">
+                    <i class="fas fa-exclamation-circle mr-1"></i> Failed
+                  </span>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+      
+      <!-- Video player sidebar -->
+      <div class="md:w-1/3">
+        {% if selected_short and selected_short.status == 'completed' %}
+          <div class="sticky top-6 bg-white p-4 rounded-lg shadow-md">
+            <h3 class="font-bold text-lg text-gray-800 mb-4">{{ selected_short.title }}</h3>
+            
+            {% set video_src = '/output/' + selected_short.output_file %}
+            {% include 'components/video_player.html' %}
+            
+            <div class="mt-4 flex justify-between">
+              <a href="{{ url_for('view_short', short_id=selected_short.id) }}" 
+                 class="px-3 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm">
+                <i class="fas fa-external-link-alt mr-1"></i> Full View
+              </a>
+              <a href="{{ url_for('download_short', short_id=selected_short.id) }}" 
+                 class="px-3 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 text-sm">
+                <i class="fas fa-download mr-1"></i> Download
+              </a>
+            </div>
+          </div>
+        {% else %}
+          <div class="sticky top-6 bg-gray-50 p-6 rounded-lg border border-gray-200 text-center">
+            <div class="text-5xl text-gray-300 mb-4">
+              <i class="fas fa-film"></i>
+            </div>
+            <h3 class="text-xl font-medium text-gray-600 mb-2">No Short Selected</h3>
+            <p class="text-gray-500 mb-4">Select a completed short to preview it here</p>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  {% endif %}
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const toggles = document.querySelectorAll('.toggle-short');
+    
+    toggles.forEach(toggle => {
+      toggle.addEventListener('change', function() {
+        const shortId = this.dataset.shortId;
+        
+        fetch(`/shorts/toggle/${shortId}`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          }
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (!data.success) {
+            this.checked = !this.checked;
+          }
+        })
+        .catch(error => {
+          console.error('Error:', error);
+          this.checked = !this.checked;
+        });
+      });
+    });
+  });
+</script>
+{% endblock %}

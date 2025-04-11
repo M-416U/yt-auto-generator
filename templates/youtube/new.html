@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="bg-white shadow-md rounded-lg p-6">
+    <h2 class="text-2xl font-bold mb-6 text-gray-800">Process Long YouTube Video</h2>
+
+    <form method="POST" class="space-y-6">
+        <div class="space-y-2">
+            <label for="url" class="block text-sm font-medium text-gray-700">YouTube Video URL:</label>
+            <input type="text" id="url" name="url" required
+                class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                placeholder="https://www.youtube.com/watch?v=...">
+        </div>
+
+        <div class="space-y-2">
+            <label for="num_parts" class="block text-sm font-medium text-gray-700">Number of segments to generate:</label>
+            <input type="number" id="num_parts" name="num_parts" min="1" max="20" value="10"
+                class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+        </div>
+
+        <button type="submit" 
+                class="w-full px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+            <i class="fas fa-video mr-2"></i>Process Video
+        </button>
+    </form>
+</div>
+{% endblock %}

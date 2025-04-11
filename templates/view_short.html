@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="bg-white shadow-md rounded-lg p-6">
+  <div class="flex justify-between items-center mb-6">
+    <h2 class="text-2xl font-bold text-gray-800">
+      {{ short.title }}
+    </h2>
+    <a href="{{ url_for('view_shorts_source', source_id=short.youtube_source_id) }}" 
+       class="text-blue-600 hover:text-blue-800">
+      <i class="fas fa-arrow-left mr-1"></i> Back to Shorts
+    </a>
+  </div>
+
+  <div class="mb-6">
+    {% include 'components/video_player.html' with context %}
+    {% set video_src = '/output/' + short.output_file %}
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+    <div class="bg-gray-50 p-4 rounded-lg">
+      <h3 class="font-medium text-gray-800 mb-2">Description</h3>
+      <p class="text-gray-600">{{ short.description }}</p>
+    </div>
+    
+    <div class="bg-gray-50 p-4 rounded-lg">
+      <h3 class="font-medium text-gray-800 mb-2">Viral Potential</h3>
+      <div class="flex items-center mb-2">
+        <div class="w-full bg-gray-200 rounded-full h-2.5">
+          <div class="bg-blue-600 h-2.5 rounded-full" style="width: {{ short.viral_score }}%"></div>
+        </div>
+        <span class="ml-2 text-sm font-medium text-gray-700">{{ short.viral_score }}/100</span>
+      </div>
+      <p class="text-gray-600">{{ short.viral_potential }}</p>
+    </div>
+  </div>
+
+  <div class="bg-gray-50 p-4 rounded-lg mb-6">
+    <h3 class="font-medium text-gray-800 mb-2">Hashtags</h3>
+    <div class="flex flex-wrap gap-2">
+      {% for hashtag in short.hashtags|fromjson %}
+        <span class="px-3 py-1 bg-blue-100 text-blue-800 text-sm rounded-full">
+          #{{ hashtag }}
+        </span>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="bg-gray-50 p-4 rounded-lg mb-6">
+    <h3 class="font-medium text-gray-800 mb-2">Transcript</h3>
+    <p class="text-gray-600 whitespace-pre-line">{{ short.transcript }}</p>
+  </div>
+
+  <div class="flex justify-between">
+    <a href="{{ url_for('view_shorts_source', source_id=short.youtube_source_id) }}" 
+       class="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700">
+      <i class="fas fa-arrow-left mr-2"></i>Back to All Shorts
+    </a>
+    
+    <a href="{{ url_for('download_short', short_id=short.id) }}" 
+       class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700">
+      <i class="fas fa-download mr-2"></i>Download Short
+    </a>
+  </div>
+</div>
+{% endblock %}

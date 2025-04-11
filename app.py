@@ -12,7 +12,13 @@ from dotenv import load_dotenv
 load_dotenv()
 
 app = Flask(__name__)
-app.config["SECRET_KEY"] = os.getenv("SECRET_KEY")
+app.config["SECRET_KEY"] = os.getenv(
+    "SECRET_KEY"
+)  # Make sure this is set in your .env file
+app.config["SESSION_TYPE"] = (
+    "filesystem"  # Add this line for more reliable session storage
+)
+app.config["PERMANENT_SESSION_LIFETIME"] = 3600  # 1 hour session lifetime
 app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv("DB_URI")
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.config["MAX_CONTENT_LENGTH"] = 16 * 1024 * 1024
@@ -63,6 +69,7 @@ from routes.image_routes import *
 from routes.audio_routes import *
 from routes.video_routes import *
 from routes.youtube_routes import *
+from routes.shorts_routes import *
 
 
 @app.template_filter("file_exists")
@@ -81,6 +88,14 @@ def format_number(value):
         return str(value)
     except:
         return "0"
+
+
+@app.template_filter("fromjson")
+def fromjson(value):
+    try:
+        return json.loads(value)
+    except:
+        return []
 
 
 if __name__ == "__main__":

@@ -4,34 +4,13 @@ from google.genai import types
 import json
 import re
 from prompts import getStoryGeneratorPrompt, getFactsGeneratorPrompt, getTopXPrompt
-
+from utils import extract_json_from_response
 
 class GeminiVideoScriptGenerator:
     """Class to generate a video script"""
 
     def __init__(self, api_key=os.getenv("GEMINI_API_KEY")):
         self.client = genai.Client(api_key=api_key)
-
-    def extract_json_from_response(self, text: str) -> dict:
-        """
-        Tries to cleanly extract JSON from a Gemini response, even if it's embedded in markdown or has extra explanation.
-        """
-        try:
-            # Attempt to extract JSON inside triple backticks ```json ... ```
-            json_match = re.search(r"```(?:json)?\s*(\{.*?\})\s*```", text, re.DOTALL)
-            if json_match:
-                return json.loads(json_match.group(1))
-
-            # Fallback: Try to extract the first full JSON object in the text
-            json_start = text.find("{")
-            json_end = text.rfind("}")
-            if json_start != -1 and json_end != -1:
-                cleaned_json = text[json_start : json_end + 1]
-                return json.loads(cleaned_json)
-        except Exception as e:
-            print("Error parsing JSON:", str(e))
-
-        return None
 
     def generate_video_script(
         self,
