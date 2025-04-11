@@ -16,7 +16,7 @@
         %} {% if not video_path|file_exists %} {% set video_path =
         'output/video_' + video.id|string + '.mp4' %} {% endif %}
         <video id="videoPlayer" class="w-full h-full">
-          <source src="/{{ video_path }}" type="video/mp4" />
+          <source src="{{ video_url }}" type="video/mp4" />
           Your browser does not support the video tag.
         </video>
 

@@ -6,7 +6,10 @@ from extensions import db
 from models.models import Video
 from models.youtube_account import YouTubeAccount
 from models.youtube_account import YouTubeStats
+from dotenv import load_dotenv
 
+# Load environment variables from .env file
+load_dotenv()
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = os.getenv("SECRET_KEY")

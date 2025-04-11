@@ -40,7 +40,8 @@ def generate_images(video_id):
         image_generator = AIImageGenerator()
 
         for i, asset_description in enumerate(script_data.get("assets", [])):
-            # Use absolute path for file storage
+            if not asset_description or not asset_description.strip():
+                continue
             image_file = os.path.join(
                 app.config["OUTPUT_IMAGES"], f"video_{video.id}_image_{i+1}.png"
             )

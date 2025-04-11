@@ -12,7 +12,7 @@
         </a>
     </div>
     
-    <div id="image-container" class="space-y-6">
+    <div id="image-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {% for image in video.images %}
             <div class="border border-gray-200 rounded-lg overflow-hidden bg-gray-50">
                 <div class="bg-gray-100 px-4 py-3 border-b border-gray-200">
@@ -22,52 +22,30 @@
                 </div>
                 
                 <div class="p-4">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div class="space-y-4">
-                            <div class="space-y-2">
-                                <label class="block text-sm font-medium text-gray-700">
-                                    <i class="fas fa-image mr-2"></i>Prompt:
-                                </label>
-                                <div class="flex space-x-2">
-                                    <textarea id="prompt_{{ image.id }}" rows="3"
-                                              class="flex-grow px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">{{ image.prompt }}</textarea>
-                                    <button onclick="updatePrompt({{ image.id }})"
-                                            class="px-3 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2">
-                                        <i class="fas fa-save"></i>
-                                    </button>
-                                </div>
-                            </div>
-                            
-                            <div class="space-y-2">
-                                <label class="block text-sm font-medium text-gray-700">
-                                    <i class="fas fa-film mr-2"></i>Animation Type:
-                                </label>
-                                <div class="flex space-x-2">
-                                    <select id="animation_{{ image.id }}"
-                                            class="flex-grow px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
-                                        <option value="fade" {% if image.animation_type == 'fade' %}selected{% endif %}>Fade</option>
-                                        <option value="zoom_in" {% if image.animation_type == 'zoom_in' %}selected{% endif %}>Zoom In</option>
-                                        <option value="zoom_out" {% if image.animation_type == 'zoom_out' %}selected{% endif %}>Zoom Out</option>
-                                        <option value="slide_left" {% if image.animation_type == 'slide_left' %}selected{% endif %}>Slide Left</option>
-                                        <option value="slide_right" {% if image.animation_type == 'slide_right' %}selected{% endif %}>Slide Right</option>
-                                    </select>
-                                    <button onclick="updateAnimation({{ image.id }})"
-                                            class="px-3 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2">
-                                        <i class="fas fa-save"></i>
-                                    </button>
-                                </div>
+                    <div class="space-y-4">
+                        <div class="space-y-2">
+                            <label class="block text-sm font-medium text-gray-700">
+                                <i class="fas fa-image mr-2"></i>Prompt:
+                            </label>
+                            <div class="flex space-x-2">
+                                <textarea id="prompt_{{ image.id }}" rows="2"
+                                          class="flex-grow px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">{{ image.prompt }}</textarea>
+                                <button onclick="updatePrompt({{ image.id }})"
+                                        class="px-3 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2">
+                                    <i class="fas fa-save"></i>
+                                </button>
                             </div>
                         </div>
                         
                         <div class="flex flex-col items-center justify-center border border-gray-200 rounded-lg bg-white p-4">
                             {% if image.file_path %}
-                                <img src="/{{ image.file_path }}" alt="Generated image" class="max-w-full max-h-64 object-contain mb-4">
+                                <img src="/{{ image.file_path }}" alt="Generated image" class="w-full h-48 object-contain mb-4">
                                 <button onclick="regenerateImage({{ image.id }})"
                                         class="w-full px-4 py-2 bg-yellow-500 text-white rounded-md hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2">
                                     <i class="fas fa-sync-alt mr-2"></i>Regenerate Image
                                 </button>
                             {% else %}
-                                <div class="flex flex-col items-center justify-center h-64 w-full">
+                                <div class="flex flex-col items-center justify-center h-48 w-full">
                                     <i class="fas fa-image text-gray-300 text-5xl mb-4"></i>
                                     <p class="text-gray-500 mb-4">Image not generated yet</p>
                                     <button onclick="generateImage({{ image.id }})"
@@ -76,6 +54,26 @@
                                     </button>
                                 </div>
                             {% endif %}
+                        </div>
+                        
+                        <div class="space-y-2">
+                            <label class="block text-sm font-medium text-gray-700">
+                                <i class="fas fa-film mr-2"></i>Animation Type:
+                            </label>
+                            <div class="flex space-x-2">
+                                <select id="animation_{{ image.id }}"
+                                        class="flex-grow px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                                    <option value="fade" {% if image.animation_type == 'fade' %}selected{% endif %}>Fade</option>
+                                    <option value="zoom_in" {% if image.animation_type == 'zoom_in' %}selected{% endif %}>Zoom In</option>
+                                    <option value="zoom_out" {% if image.animation_type == 'zoom_out' %}selected{% endif %}>Zoom Out</option>
+                                    <option value="slide_left" {% if image.animation_type == 'slide_left' %}selected{% endif %}>Slide Left</option>
+                                    <option value="slide_right" {% if image.animation_type == 'slide_right' %}selected{% endif %}>Slide Right</option>
+                                </select>
+                                <button onclick="updateAnimation({{ image.id }})"
+                                        class="px-3 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2">
+                                    <i class="fas fa-save"></i>
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
