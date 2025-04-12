@@ -30,6 +30,8 @@ def new_video():
         height = int(request.form.get("height", 1280))
         duration = int(request.form.get("duration", 60))
         image_style = request.form.get("image_style", "realistic")
+        tone = request.form.get("tone", "conversational")
+        writing_style = request.form.get("writing_style", "direct")
 
         video = Video(
             title=f"Video about {topic}",
@@ -40,6 +42,8 @@ def new_video():
             height=height,
             duration=duration,
             image_style=image_style,
+            tone=tone,
+            writing_style=writing_style,
             status="processing",
         )
 
@@ -61,6 +65,8 @@ def new_video():
                         video.video_type,
                         duration=video.duration,
                         style=video.image_style,
+                        tone=video.tone,
+                        writing_style=video.writing_style,
                     )
 
                     if script_data:
@@ -148,8 +154,6 @@ def delete_video(video_id):
     return redirect(url_for("index"))
 
 
-# Step 4: Video Creation and Captioning
-# Update the file paths in video_routes.py
 @app.route("/video/<int:video_id>/create_video", methods=["GET", "POST"])
 def create_video(video_id):
     video = Video.query.get_or_404(video_id)

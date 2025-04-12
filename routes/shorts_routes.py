@@ -100,11 +100,11 @@ def view_shorts_source(source_id):
 
     # Check if processing is complete
     processing_complete = all(short.status != "processing" for short in shorts)
-    
+
     # Get the first completed short to display by default
     selected_short = None
     for short in shorts:
-        if short.status == 'completed':
+        if short.status == "completed":
             selected_short = short
             break
 
@@ -114,20 +114,21 @@ def view_shorts_source(source_id):
         shorts=shorts,
         processing_complete=processing_complete,
         selected_short=selected_short,
-        selected_short_id=selected_short.id if selected_short else None
+        selected_short_id=selected_short.id if selected_short else None,
     )
+
 
 @app.route("/shorts/source/<int:source_id>/short/<int:short_id>")
 def view_short_in_source(source_id, short_id):
     source = YouTubeSource.query.get_or_404(source_id)
     shorts = YouTubeShort.query.filter_by(youtube_source_id=source_id).all()
     selected_short = YouTubeShort.query.get_or_404(short_id)
-    
+
     # Ensure the short belongs to this source
     if selected_short.youtube_source_id != source_id:
         flash("This short does not belong to the selected source", "error")
-        return redirect(url_for('view_shorts_source', source_id=source_id))
-    
+        return redirect(url_for("view_shorts_source", source_id=source_id))
+
     # Check if processing is complete
     processing_complete = all(short.status != "processing" for short in shorts)
 
@@ -137,13 +138,15 @@ def view_short_in_source(source_id, short_id):
         shorts=shorts,
         processing_complete=processing_complete,
         selected_short=selected_short,
-        selected_short_id=short_id
+        selected_short_id=short_id,
     )
 
 
 @app.route("/shorts/toggle/<int:short_id>", methods=["POST"])
 def toggle_short_selection(short_id):
     short = YouTubeShort.query.get_or_404(short_id)
+    if short.status == "completed":
+        return jsonify({"success": False, "message": "Cannot modify completed shorts"})
     short.selected = not short.selected
     db.session.commit()
     return jsonify({"success": True, "selected": short.selected})
@@ -265,6 +268,14 @@ def shorts_progress(source_id):
     processing = len([s for s in selected_shorts if s.status == "processing"])
     failed = len([s for s in selected_shorts if s.status == "failed"])
 
+    # Check if any shorts are still processing
+    any_processing = (
+        YouTubeShort.query.filter_by(
+            youtube_source_id=source_id, status="processing"
+        ).first()
+        is not None
+    )
+
     progress = 0
     if total > 0:
         progress = int((completed / total) * 100)
@@ -276,7 +287,7 @@ def shorts_progress(source_id):
             "processing": processing,
             "failed": failed,
             "progress": progress,
-            "is_complete": completed + failed == total,
+            "is_complete": not any_processing,
         }
     )
 
@@ -285,51 +296,88 @@ def shorts_progress(source_id):
 def all_shorts_sources():
     """View all YouTube source videos that have been processed for shorts"""
     sources = YouTubeSource.query.order_by(YouTubeSource.created_at.desc()).all()
-    
+
     # Get count of shorts for each source
     for source in sources:
-        source.shorts_count = YouTubeShort.query.filter_by(youtube_source_id=source.id).count()
-        source.selected_count = YouTubeShort.query.filter_by(youtube_source_id=source.id, selected=True).count()
-        source.completed_count = YouTubeShort.query.filter_by(youtube_source_id=source.id, status="completed").count()
-        
+        source.shorts_count = YouTubeShort.query.filter_by(
+            youtube_source_id=source.id
+        ).count()
+        source.selected_count = YouTubeShort.query.filter_by(
+            youtube_source_id=source.id, selected=True
+        ).count()
+        source.completed_count = YouTubeShort.query.filter_by(
+            youtube_source_id=source.id, status="completed"
+        ).count()
+
         # Extract video ID from URL
         video_id_match = re.search(r"(?:v=|\/)([0-9A-Za-z_-]{11}).*", source.url)
         if video_id_match:
             source.video_id = video_id_match.group(1)
-            source.thumbnail_url = f"https://img.youtube.com/vi/{source.video_id}/mqdefault.jpg"
+            source.thumbnail_url = (
+                f"https://img.youtube.com/vi/{source.video_id}/mqdefault.jpg"
+            )
         else:
             source.thumbnail_url = None
-    
+
     return render_template("all_shorts_sources.html", sources=sources)
 
 
 @app.route("/shorts/source/<int:source_id>/delete", methods=["POST"])
 def delete_shorts_source(source_id):
     source = YouTubeSource.query.get_or_404(source_id)
-    
+
     try:
         # Delete all associated shorts first
         shorts = YouTubeShort.query.filter_by(youtube_source_id=source_id).all()
-        
+
         # Delete video files if they exist
         for short in shorts:
             if short.output_file:
-                video_path = os.path.join(app.config["OUTPUT_FOLDER"], short.output_file)
+                video_path = os.path.join(
+                    app.config["OUTPUT_FOLDER"], short.output_file
+                )
                 if os.path.exists(video_path):
                     try:
                         os.remove(video_path)
                     except Exception as e:
                         print(f"Error deleting file {video_path}: {str(e)}")
-            
+
             db.session.delete(short)
-        
+
         # Delete the source
         db.session.delete(source)
         db.session.commit()
-        
+
         flash("YouTube source and all associated shorts have been deleted", "success")
     except Exception as e:
         db.session.rollback()
         flash(f"Error deleting source: {str(e)}", "error")
-    
+
     return redirect(url_for("all_shorts_sources"))
+
+
+@app.route("/shorts/delete/<int:short_id>", methods=["POST"])
+def delete_short_from_source(short_id):
+    short = YouTubeShort.query.get_or_404(short_id)
+    source_id = short.youtube_source_id
+
+    try:
+        # Delete video file if it exists
+        if short.output_file:
+            video_path = os.path.join(app.config["OUTPUT_FOLDER"], short.output_file)
+            if os.path.exists(video_path):
+                try:
+                    os.remove(video_path)
+                except Exception as e:
+                    print(f"Error deleting file {video_path}: {str(e)}")
+
+        # Delete the short from database
+        db.session.delete(short)
+        db.session.commit()
+
+        flash("Short has been deleted successfully", "success")
+    except Exception as e:
+        db.session.rollback()
+        flash(f"Error deleting short: {str(e)}", "error")
+
+    return redirect(url_for("view_shorts_source", source_id=source_id))

@@ -13,8 +13,8 @@
   </div>
 
   <div class="mb-6">
-    {% include 'components/video_player.html' with context %}
     {% set video_src = '/output/' + short.output_file %}
+    {% include 'components/video_player.html' with context %}
   </div>
 
   <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">

@@ -84,3 +84,45 @@ Respond in this **exact JSON format**:
 - Each line must have a matching image prompt that visually represents that item.
 - Total video length should be approximately {duration} seconds.
 """
+
+
+# """
+# Write a short,
+# first-person monologue script for a voiceover video. The tone is [{tone}],
+# the writing style should be [{style}],
+# and the main idea is [{main_idea}].
+# Keep it emotionally engaging, concise, and impactful.
+# Estimated length: [{duration}] seconds.
+# Focus on grabbing attention fast,
+# delivering a strong message, and ending with a memorable closing line.
+# """
+
+
+def getMonologuePrompt(
+    topic: str, duration: int = 60, tone: str = "conversational", style: str = "direct"
+):
+    return f"""
+Act like a professional voiceover scriptwriter who specializes in impactful first-person monologues.
+Write a short, first-person monologue script about this topic: {topic}
+The tone should be {tone}, and the writing style should be {style}.
+Make it emotionally engaging, concise, and impactful. Keep it around {duration} seconds.
+
+Important: The script should contain actual spoken narration text that will be read aloud in the video, not descriptions of what happens.
+
+Return the response in this JSON format exactly:
+{{
+ "title": "Insert a short, catchy title that's optimized for virality and SEO",
+ "desc": "Short description to be used for the video caption — punchy and engaging",
+ "script": [
+   "Line 1 of actual spoken monologue",
+   ... more lines until it match duration needed
+ ],
+ "assets": [
+  "Detailed visual prompt for image",
+  ...
+ ]
+}}
+- make sure the images order and amount match the script lines.
+- make sure the script lines contain actual spoken text, not scenario descriptions.
+- Focus on grabbing attention fast and ending with a memorable closing line.
+"""

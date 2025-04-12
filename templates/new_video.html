@@ -30,6 +30,7 @@
         <option value="story">Story</option>
         <option value="facts">Facts</option>
         <option value="topX">Top X</option>
+        <option value="monologue">First-Person Monologue</option>
       </select>
     </div>
 
@@ -180,6 +181,48 @@
     </div>
   </form>
 </div>
+
+<div class="form-group monologue-options hidden" id="monologueOptions">
+  <label for="tone" class="block text-sm font-medium text-gray-700">Tone</label>
+  <select
+    name="tone"
+    id="tone"
+    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
+  >
+    <option value="conversational">Conversational</option>
+    <option value="bold">Bold</option>
+    <option value="vulnerable">Vulnerable</option>
+    <option value="uplifting">Uplifting</option>
+    <option value="urgent">Urgent</option>
+  </select>
+
+  <label
+    for="writing_style"
+    class="block text-sm font-medium text-gray-700 mt-4"
+    >Writing Style</label
+  >
+  <select
+    name="writing_style"
+    id="writing_style"
+    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
+  >
+    <option value="direct">Direct</option>
+    <option value="poetic">Poetic</option>
+    <option value="conversational">Conversational</option>
+    <option value="punchy">Punchy</option>
+  </select>
+</div>
+
+<script>
+  document.getElementById("video_type").addEventListener("change", function () {
+    const monologueOptions = document.getElementById("monologueOptions");
+    if (this.value === "monologue") {
+      monologueOptions.classList.remove("hidden");
+    } else {
+      monologueOptions.classList.add("hidden");
+    }
+  });
+</script>
 
 <script>
   document.addEventListener("DOMContentLoaded", function () {

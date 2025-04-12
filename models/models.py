@@ -24,6 +24,8 @@ class Video(db.Model):
     source_timestamp = db.Column(
         db.String(50), nullable=True
     )  # Store start/end timestamps
+    tone = db.Column(db.String(50))
+    writing_style = db.Column(db.String(50))
 
 
 class Script(db.Model):

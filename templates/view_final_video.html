@@ -1,6 +1,4 @@
-{% extends 'base.html' %} 
-
-{% block content %}
+{% extends 'base.html' %} {% block content %}
 <div class="bg-white shadow-md rounded-lg p-6">
   <h2 class="text-2xl font-bold mb-6 text-gray-800">
     Final Video: "{{ video.title }}"
@@ -8,17 +6,14 @@
 
   <div class="space-y-6">
     {% set video_path = 'output/video_' + video.id|string + '_with_subs.mp4' %}
-    {% if not video_path|file_exists %}
-      {% set video_path = 'output/video_' + video.id|string + '.mp4' %}
-    {% endif %}
-    
-    {% set video_src = video_url %}
-    {% set video_type = 'video/mp4' %}
-    {% set container_class = 'aspect-video' %}
-    {% set container_style = 'width: ' ~ (video.width > 450 ? '450' : video.width) ~ 'px; aspect-ratio: ' ~ video.width ~ ' / ' ~ video.height ~ ';' %}
-    
-    {% include 'components/video_player.html' with context %}
-    
+    {% if not video_path|file_exists %} {% set video_path = 'output/video_' +
+    video.id|string + '.mp4' %} {% endif %} {% set video_src = video_url %} {%
+    set video_type = 'video/mp4' %} {% set container_class = 'aspect-video' %}
+    {% set container_width = '450' if video.width > 450 else video.width|string
+    %} {% set container_style = 'width: ' ~ container_width ~ 'px; aspect-ratio:
+    ' ~ video.width ~ ' / ' ~ video.height ~ ';' %} {% include
+    'components/video_player.html' with context %}
+
     <!-- Download button -->
     <div class="flex justify-center">
       <a

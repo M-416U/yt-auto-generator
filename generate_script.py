@@ -3,8 +3,14 @@ from google import genai
 from google.genai import types
 import json
 import re
-from prompts import getStoryGeneratorPrompt, getFactsGeneratorPrompt, getTopXPrompt
+from prompts import (
+    getMonologuePrompt,
+    getStoryGeneratorPrompt,
+    getFactsGeneratorPrompt,
+    getTopXPrompt,
+)
 from utils import extract_json_from_response
+
 
 class GeminiVideoScriptGenerator:
     """Class to generate a video script"""
@@ -18,11 +24,17 @@ class GeminiVideoScriptGenerator:
         video_type: str = "story",
         duration: int = 60,
         style="realistic",
+        tone="conversational",
+        writing_style="direct",
     ) -> dict:
         if video_type == "facts":
             prompt = getFactsGeneratorPrompt(topic, duration=duration)
         elif video_type == "topX":
             prompt = getTopXPrompt(topic, duration=duration)
+        elif video_type == "monologue":
+            prompt = getMonologuePrompt(
+                topic, duration=duration, tone=tone, style=writing_style
+            )
         else:
             prompt = getStoryGeneratorPrompt(topic, duration=duration)
         try:
@@ -35,7 +47,7 @@ class GeminiVideoScriptGenerator:
             )
 
             raw_text = response.candidates[0].content.parts[0].text
-            return self.extract_json_from_response(raw_text)
+            return extract_json_from_response(raw_text)
         except Exception as e:
             print("Error generating video script:", str(e), response)
             return None
