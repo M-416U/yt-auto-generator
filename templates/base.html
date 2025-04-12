@@ -100,6 +100,13 @@
               <i class="fab fa-youtube nav-icon"></i>
               <span class="nav-text">YouTube Channels</span>
             </a>
+            <a
+              href="{{ url_for('view_uploads') }}"
+              class="nav-link {% if active_page == url_for('view_uploads') %}active{% endif %}"
+            >
+              <i class="fas fa-upload nav-icon"></i>
+              <span class="nav-text">Uploads</span>
+            </a>
           </nav>
         </div>
       </div>

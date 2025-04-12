@@ -57,10 +57,17 @@
       <i class="fas fa-arrow-left mr-2"></i>Back to All Shorts
     </a>
     
-    <a href="{{ url_for('download_short', short_id=short.id) }}" 
-       class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700">
-      <i class="fas fa-download mr-2"></i>Download Short
-    </a>
+    <div class="flex space-x-2">
+      <a href="{{ url_for('download_short', short_id=short.id) }}" 
+         class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+        <i class="fas fa-download mr-2"></i>Download Short
+      </a>
+      
+      <a href="{{ url_for('short_upload_form', short_id=short.id) }}" 
+         class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700">
+        <i class="fas fa-upload mr-2"></i>Upload to YouTube
+      </a>
+    </div>
   </div>
 </div>
 {% endblock %}

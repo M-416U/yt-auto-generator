@@ -1,6 +1,7 @@
 import os
 from flask import Flask, render_template
 from extensions import db
+import json
 
 # models
 from models.models import Video
@@ -70,6 +71,7 @@ from routes.audio_routes import *
 from routes.video_routes import *
 from routes.youtube_routes import *
 from routes.shorts_routes import *
+from routes.upload_routes import *  # Import the new upload routes
 
 
 @app.template_filter("file_exists")

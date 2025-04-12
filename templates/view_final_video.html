@@ -14,13 +14,20 @@
     ' ~ video.width ~ ' / ' ~ video.height ~ ';' %} {% include
     'components/video_player.html' with context %}
 
-    <!-- Download button -->
-    <div class="flex justify-center">
+    <!-- Action buttons -->
+    <div class="flex justify-center space-x-4">
       <a
         href="{{ url_for('download_video', video_id=video.id) }}"
         class="inline-flex items-center px-6 py-3 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
       >
         <i class="fas fa-download mr-2"></i>Download Video
+      </a>
+      
+      <a
+        href="{{ url_for('video_upload_form', video_id=video.id) }}"
+        class="inline-flex items-center px-6 py-3 bg-green-600 text-white rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
+      >
+        <i class="fas fa-upload mr-2"></i>Upload to YouTube
       </a>
     </div>
   </div>

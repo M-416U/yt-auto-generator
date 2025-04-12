@@ -1,93 +1,129 @@
-{% extends 'base.html' %}
-
-{% block content %}
+{% extends 'base.html' %} {% block content %}
 <div class="bg-white shadow-md rounded-lg p-6">
   <div class="flex justify-between items-center mb-6">
     <h2 class="text-2xl font-bold text-gray-800">All YouTube Shorts Sources</h2>
-    <a href="{{ url_for('new_shorts') }}" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+    <a
+      href="{{ url_for('new_shorts') }}"
+      class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+    >
       <i class="fas fa-plus mr-2"></i>Process New Video
     </a>
   </div>
 
   {% if sources %}
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      {% for source in sources %}
-        <div class="bg-white border rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow">
-          <div class="relative">
-            {% if source.thumbnail_url %}
-              <img src="{{ source.thumbnail_url }}" alt="{{ source.title or 'YouTube Video' }}" class="w-full h-48 object-cover">
-            {% else %}
-              <div class="w-full h-48 bg-gray-200 flex items-center justify-center">
-                <i class="fas fa-video text-gray-400 text-4xl"></i>
-              </div>
-            {% endif %}
-            <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-3">
-              <h3 class="text-white font-medium truncate">{{ source.title or 'Untitled Video' }}</h3>
-            </div>
-            <!-- Delete button -->
-            <button 
-              class="delete-source-btn absolute top-2 right-2 bg-red-500 hover:bg-red-600 text-white rounded-full p-2 opacity-70 hover:opacity-100 transition-opacity"
-              data-source-id="{{ source.id }}"
-              data-source-title="{{ source.title or 'Untitled Video' }}"
-            >
-              <i class="fas fa-trash-alt"></i>
-            </button>
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    {% for source in sources %}
+    <div
+      class="bg-white border rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow"
+    >
+      <div class="relative">
+        {% if source.thumbnail_url %}
+        <img
+          src="{{ source.thumbnail_url }}"
+          alt="{{ source.title or 'YouTube Video' }}"
+          class="w-full h-48 object-cover"
+        />
+        {% else %}
+        <div class="w-full h-48 bg-gray-200 flex items-center justify-center">
+          <i class="fas fa-video text-gray-400 text-4xl"></i>
+        </div>
+        {% endif %}
+        <div
+          class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-3"
+        >
+          <h3 class="text-white font-medium truncate">
+            {{ source.title or 'Untitled Video' }}
+          </h3>
+        </div>
+        <!-- Delete button -->
+        <button
+          class="delete-source-btn absolute top-2 right-2 bg-red-500 hover:bg-red-600 text-white rounded-md p-2 px-3"
+          data-source-id="{{ source.id }}"
+          data-source-title="{{ source.title or 'Untitled Video' }}"
+        >
+          <i class="fas fa-trash-alt"></i>
+        </button>
+      </div>
+
+      <div class="p-4">
+        <div class="flex justify-between items-center mb-3">
+          <span class="text-sm text-gray-500"
+            >{{ source.created_at.strftime('%Y-%m-%d') }}</span
+          >
+          <span class="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full"
+            >{{ source.language or 'Unknown' }}</span
+          >
+        </div>
+
+        <div class="space-y-2 mb-4">
+          <div class="flex justify-between text-sm">
+            <span>Total Shorts:</span>
+            <span class="font-medium">{{ source.shorts_count }}</span>
           </div>
-          
-          <div class="p-4">
-            <div class="flex justify-between items-center mb-3">
-              <span class="text-sm text-gray-500">{{ source.created_at.strftime('%Y-%m-%d') }}</span>
-              <span class="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">{{ source.language or 'Unknown' }}</span>
-            </div>
-            
-            <div class="space-y-2 mb-4">
-              <div class="flex justify-between text-sm">
-                <span>Total Shorts:</span>
-                <span class="font-medium">{{ source.shorts_count }}</span>
-              </div>
-              <div class="flex justify-between text-sm">
-                <span>Selected:</span>
-                <span class="font-medium">{{ source.selected_count }}</span>
-              </div>
-              <div class="flex justify-between text-sm">
-                <span>Completed:</span>
-                <span class="font-medium">{{ source.completed_count }}</span>
-              </div>
-            </div>
-            
-            <a href="{{ url_for('view_shorts_source', source_id=source.id) }}" 
-               class="block w-full text-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
-              View Shorts
-            </a>
+          <div class="flex justify-between text-sm">
+            <span>Selected:</span>
+            <span class="font-medium">{{ source.selected_count }}</span>
+          </div>
+          <div class="flex justify-between text-sm">
+            <span>Completed:</span>
+            <span class="font-medium">{{ source.completed_count }}</span>
           </div>
         </div>
-      {% endfor %}
-    </div>
-  {% else %}
-    <div class="text-center py-12">
-      <div class="text-5xl text-gray-300 mb-4">
-        <i class="fas fa-film"></i>
+
+        <a
+          href="{{ url_for('view_shorts_source', source_id=source.id) }}"
+          class="block w-full text-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+        >
+          View Shorts
+        </a>
       </div>
-      <h3 class="text-xl font-medium text-gray-600 mb-2">No YouTube Videos Processed Yet</h3>
-      <p class="text-gray-500 mb-6">Process your first YouTube video to generate shorts</p>
-      <a href="{{ url_for('new_shorts') }}" class="px-6 py-3 bg-blue-600 text-white rounded-md hover:bg-blue-700">
-        <i class="fas fa-plus mr-2"></i>Process New Video
-      </a>
     </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="text-center py-12">
+    <div class="text-5xl text-gray-300 mb-4">
+      <i class="fas fa-film"></i>
+    </div>
+    <h3 class="text-xl font-medium text-gray-600 mb-2">
+      No YouTube Videos Processed Yet
+    </h3>
+    <p class="text-gray-500 mb-6">
+      Process your first YouTube video to generate shorts
+    </p>
+    <a
+      href="{{ url_for('new_shorts') }}"
+      class="px-6 py-3 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+    >
+      <i class="fas fa-plus mr-2"></i>Process New Video
+    </a>
+  </div>
   {% endif %}
 </div>
 
 <!-- Confirmation Modal -->
-<div id="deleteModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
+<div
+  id="deleteModal"
+  class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50"
+>
   <div class="bg-white rounded-lg p-6 max-w-md w-full">
     <h3 class="text-xl font-bold text-gray-800 mb-4">Confirm Deletion</h3>
-    <p class="text-gray-600 mb-6">Are you sure you want to delete "<span id="sourceTitle"></span>"? This will remove all associated shorts and cannot be undone.</p>
+    <p class="text-gray-600 mb-6">
+      Are you sure you want to delete "<span id="sourceTitle"></span>"? This
+      will remove all associated shorts and cannot be undone.
+    </p>
     <div class="flex justify-end space-x-3">
-      <button id="cancelDelete" class="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400">
+      <button
+        id="cancelDelete"
+        class="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400"
+      >
         Cancel
       </button>
       <form id="deleteForm" method="POST" action="">
-        <button type="submit" class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700">
+        <button
+          type="submit"
+          class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
+        >
           Delete
         </button>
       </form>
@@ -96,32 +132,32 @@
 </div>
 
 <script>
-  document.addEventListener('DOMContentLoaded', function() {
-    const deleteButtons = document.querySelectorAll('.delete-source-btn');
-    const deleteModal = document.getElementById('deleteModal');
-    const sourceTitle = document.getElementById('sourceTitle');
-    const deleteForm = document.getElementById('deleteForm');
-    const cancelDelete = document.getElementById('cancelDelete');
-    
-    deleteButtons.forEach(button => {
-      button.addEventListener('click', function() {
+  document.addEventListener("DOMContentLoaded", function () {
+    const deleteButtons = document.querySelectorAll(".delete-source-btn");
+    const deleteModal = document.getElementById("deleteModal");
+    const sourceTitle = document.getElementById("sourceTitle");
+    const deleteForm = document.getElementById("deleteForm");
+    const cancelDelete = document.getElementById("cancelDelete");
+
+    deleteButtons.forEach((button) => {
+      button.addEventListener("click", function () {
         const sourceId = this.dataset.sourceId;
         const title = this.dataset.sourceTitle;
-        
+
         sourceTitle.textContent = title;
         deleteForm.action = `/shorts/source/${sourceId}/delete`;
-        deleteModal.classList.remove('hidden');
+        deleteModal.classList.remove("hidden");
       });
     });
-    
-    cancelDelete.addEventListener('click', function() {
-      deleteModal.classList.add('hidden');
+
+    cancelDelete.addEventListener("click", function () {
+      deleteModal.classList.add("hidden");
     });
-    
+
     // Close modal when clicking outside
-    deleteModal.addEventListener('click', function(e) {
+    deleteModal.addEventListener("click", function (e) {
       if (e.target === deleteModal) {
-        deleteModal.classList.add('hidden');
+        deleteModal.classList.add("hidden");
       }
     });
   });

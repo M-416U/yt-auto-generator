@@ -26,6 +26,8 @@ class Video(db.Model):
     )  # Store start/end timestamps
     tone = db.Column(db.String(50))
     writing_style = db.Column(db.String(50))
+    # Add relationship to track uploads
+    uploads = db.relationship("VideoUpload", backref="video", lazy=True)
 
 
 class Script(db.Model):
@@ -78,3 +80,33 @@ class YouTubeShort(db.Model):
     output_file = db.Column(db.String(255))
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     selected = db.Column(db.Boolean, default=True)  # To track if user selected this short
+    # Add relationship to track uploads
+    uploads = db.relationship("ShortUpload", backref="short", lazy=True)
+
+
+# New model to track video uploads to YouTube
+class VideoUpload(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    video_id = db.Column(db.Integer, db.ForeignKey("video.id"), nullable=False)
+    account_id = db.Column(db.Integer, db.ForeignKey("you_tube_account.id"), nullable=False)
+    youtube_video_id = db.Column(db.String(255), nullable=True)  # YouTube's video ID after upload
+    upload_status = db.Column(db.String(50), default="pending")  # pending, uploading, completed, failed
+    upload_date = db.Column(db.DateTime, default=datetime.utcnow)
+    error_message = db.Column(db.Text, nullable=True)
+    
+    # Relationship to YouTube account
+    account = db.relationship("YouTubeAccount", backref="video_uploads")
+
+
+# New model to track short uploads to YouTube
+class ShortUpload(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    short_id = db.Column(db.Integer, db.ForeignKey("you_tube_short.id"), nullable=False)
+    account_id = db.Column(db.Integer, db.ForeignKey("you_tube_account.id"), nullable=False)
+    youtube_video_id = db.Column(db.String(255), nullable=True)  # YouTube's video ID after upload
+    upload_status = db.Column(db.String(50), default="pending")  # pending, uploading, completed, failed
+    upload_date = db.Column(db.DateTime, default=datetime.utcnow)
+    error_message = db.Column(db.Text, nullable=True)
+    
+    # Relationship to YouTube account
+    account = db.relationship("YouTubeAccount", backref="short_uploads")

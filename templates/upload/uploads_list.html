@@ -1,0 +1,131 @@
+{% extends 'base.html' %}
+
+{% block title %}YouTube Uploads{% endblock %}
+
+{% block content %}
+<div class="bg-white shadow-md rounded-lg p-6">
+  <h2 class="text-2xl font-bold mb-6 text-gray-800">YouTube Uploads</h2>
+
+  <div class="mb-8">
+    <h3 class="text-xl font-semibold mb-4 text-gray-700">Video Uploads</h3>
+    {% if video_uploads %}
+      <div class="overflow-x-auto">
+        <table class="min-w-full bg-white">
+          <thead class="bg-gray-100">
+            <tr>
+              <th class="py-3 px-4 text-left text-sm font-medium text-gray-600 uppercase tracking-wider">Video</th>
+              <th class="py-3 px-4 text-left text-sm font-medium text-gray-600 uppercase tracking-wider">Channel</th>
+              <th class="py-3 px-4 text-left text-sm font-medium text-gray-600 uppercase tracking-wider">Status</th>
+              <th class="py-3 px-4 text-left text-sm font-medium text-gray-600 uppercase tracking-wider">Upload Date</th>
+              <th class="py-3 px-4 text-left text-sm font-medium text-gray-600 uppercase tracking-wider">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-200">
+            {% for upload in video_uploads %}
+            <tr>
+              <td class="py-3 px-4">
+                <div class="flex items-center">
+                  <div>
+                    <div class="text-sm font-medium text-gray-900">{{ upload.video.title }}</div>
+                    <div class="text-sm text-gray-500">ID: {{ upload.video_id }}</div>
+                  </div>
+                </div>
+              </td>
+              <td class="py-3 px-4">
+                <div class="text-sm text-gray-900">{{ upload.account.channel_title }}</div>
+              </td>
+              <td class="py-3 px-4">
+                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
+                  {% if upload.upload_status == 'completed' %}bg-green-100 text-green-800
+                  {% elif upload.upload_status == 'failed' %}bg-red-100 text-red-800
+                  {% elif upload.upload_status == 'uploading' %}bg-blue-100 text-blue-800
+                  {% else %}bg-gray-100 text-gray-800{% endif %}">
+                  {{ upload.upload_status|upper }}
+                </span>
+                {% if upload.error_message %}
+                <div class="text-xs text-red-600 mt-1">{{ upload.error_message }}</div>
+                {% endif %}
+              </td>
+              <td class="py-3 px-4">
+                <div class="text-sm text-gray-900">{{ upload.upload_date.strftime('%Y-%m-%d %H:%M') }}</div>
+              </td>
+              <td class="py-3 px-4">
+                {% if upload.youtube_video_id %}
+                <a href="https://youtube.com/watch?v={{ upload.youtube_video_id }}" target="_blank" 
+                   class="text-blue-600 hover:text-blue-900">
+                  <i class="fab fa-youtube mr-1"></i>View on YouTube
+                </a>
+                {% endif %}
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <p class="text-gray-600">No video uploads found.</p>
+    {% endif %}
+  </div>
+
+  <div>
+    <h3 class="text-xl font-semibold mb-4 text-gray-700">Short Uploads</h3>
+    {% if short_uploads %}
+      <div class="overflow-x-auto">
+        <table class="min-w-full bg-white">
+          <thead class="bg-gray-100">
+            <tr>
+              <th class="py-3 px-4 text-left text-sm font-medium text-gray-600 uppercase tracking-wider">Short</th>
+              <th class="py-3 px-4 text-left text-sm font-medium text-gray-600 uppercase tracking-wider">Channel</th>
+              <th class="py-3 px-4 text-left text-sm font-medium text-gray-600 uppercase tracking-wider">Status</th>
+              <th class="py-3 px-4 text-left text-sm font-medium text-gray-600 uppercase tracking-wider">Upload Date</th>
+              <th class="py-3 px-4 text-left text-sm font-medium text-gray-600 uppercase tracking-wider">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-200">
+            {% for upload in short_uploads %}
+            <tr>
+              <td class="py-3 px-4">
+                <div class="flex items-center">
+                  <div>
+                    <div class="text-sm font-medium text-gray-900">{{ upload.short.title }}</div>
+                    <div class="text-sm text-gray-500">ID: {{ upload.short_id }}</div>
+                  </div>
+                </div>
+              </td>
+              <td class="py-3 px-4">
+                <div class="text-sm text-gray-900">{{ upload.account.channel_title }}</div>
+              </td>
+              <td class="py-3 px-4">
+                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
+                  {% if upload.upload_status == 'completed' %}bg-green-100 text-green-800
+                  {% elif upload.upload_status == 'failed' %}bg-red-100 text-red-800
+                  {% elif upload.upload_status == 'uploading' %}bg-blue-100 text-blue-800
+                  {% else %}bg-gray-100 text-gray-800{% endif %}">
+                  {{ upload.upload_status|upper }}
+                </span>
+                {% if upload.error_message %}
+                <div class="text-xs text-red-600 mt-1">{{ upload.error_message }}</div>
+                {% endif %}
+              </td>
+              <td class="py-3 px-4">
+                <div class="text-sm text-gray-900">{{ upload.upload_date.strftime('%Y-%m-%d %H:%M') }}</div>
+              </td>
+              <td class="py-3 px-4">
+                {% if upload.youtube_video_id %}
+                <a href="https://youtube.com/watch?v={{ upload.youtube_video_id }}" target="_blank" 
+                   class="text-blue-600 hover:text-blue-900">
+                  <i class="fab fa-youtube mr-1"></i>View on YouTube
+                </a>
+                {% endif %}
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <p class="text-gray-600">No short uploads found.</p>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
