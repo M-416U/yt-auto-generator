@@ -5,50 +5,129 @@
   </h2>
 
   <form method="POST" class="space-y-6">
-    <div class="space-y-2">
-      <label for="topic" class="block text-sm font-medium text-gray-700"
-        >Topic (what the video is about):</label
-      >
-      <input
-        type="text"
-        id="topic"
-        name="topic"
-        required
-        class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-      />
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <!-- Main Idea -->
+      <div class="md:col-span-2">
+        <label
+          for="main_idea"
+          class="block text-sm font-semibold text-gray-800 mb-1"
+        >
+          Main Idea
+        </label>
+        <textarea
+          name="main_idea"
+          id="main_idea"
+          rows="3"
+          required
+          class="w-full px-4 py-2 text-sm text-gray-800 placeholder-gray-400 bg-white border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          placeholder="What is your video about?"
+        ></textarea>
+      </div>
+
+      <!-- Video Type -->
+      <div>
+        <label
+          for="video_type"
+          class="block text-sm font-semibold text-gray-800 mb-1"
+        >
+          Video Type
+        </label>
+        <select
+          id="video_type"
+          name="video_type"
+          class="w-full px-4 py-2 text-sm text-gray-800 bg-white border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+        >
+          <option value="social_video">Social Video</option>
+          <option value="generative_ai">Generative AI</option>
+          <option value="clip_summary">Clip Summary</option>
+        </select>
+      </div>
+
+      <!-- Niche -->
+      <div>
+        <label
+          for="niche"
+          class="block text-sm font-semibold text-gray-800 mb-1"
+        >
+          Niche
+        </label>
+        <select
+          name="niche"
+          id="niche"
+          class="w-full px-4 py-2 text-sm text-gray-800 bg-white border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+        >
+          <option value="fitness">Fitness</option>
+          <option value="finance">Finance</option>
+          <option value="relationships">Relationships</option>
+          <option value="mindset">Mindset</option>
+          <option value="business">Business</option>
+          <option value="health">Health</option>
+          <option value="self-worth">Self-Worth</option>
+        </select>
+      </div>
+
+      <!-- Tone -->
+      <div>
+        <label
+          for="tone"
+          class="block text-sm font-semibold text-gray-800 mb-1"
+        >
+          Tone
+        </label>
+        <select
+          name="tone"
+          id="tone"
+          class="w-full px-4 py-2 text-sm text-gray-800 bg-white border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+        >
+          <option value="conversational">Conversational</option>
+          <option value="bold">Bold</option>
+          <option value="vulnerable">Vulnerable</option>
+          <option value="uplifting">Uplifting</option>
+          <option value="urgent">Urgent</option>
+        </select>
+      </div>
+
+      <!-- Writing Style -->
+      <div>
+        <label
+          for="writing_style"
+          class="block text-sm font-semibold text-gray-800 mb-1"
+        >
+          Writing Style
+        </label>
+        <select
+          name="writing_style"
+          id="writing_style"
+          class="w-full px-4 py-2 text-sm text-gray-800 bg-white border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+        >
+          <option value="direct">Direct</option>
+          <option value="poetic">Poetic</option>
+          <option value="conversational">Conversational</option>
+          <option value="punchy">Punchy</option>
+        </select>
+      </div>
+
+      <!-- Duration -->
+      <div>
+        <label
+          for="duration"
+          class="block text-sm font-semibold text-gray-800 mb-1"
+        >
+          Duration (seconds)
+        </label>
+        <input
+          type="number"
+          id="duration"
+          name="duration"
+          value="60"
+          min="10"
+          max="600"
+          class="w-full px-4 py-2 text-sm text-gray-800 bg-white border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+        />
+      </div>
     </div>
 
-    <div class="space-y-2">
-      <label for="video_type" class="block text-sm font-medium text-gray-700"
-        >Video Type:</label
-      >
-      <select
-        id="video_type"
-        name="video_type"
-        class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-      >
-        <option value="story">Story</option>
-        <option value="facts">Facts</option>
-        <option value="topX">Top X</option>
-        <option value="monologue">First-Person Monologue</option>
-      </select>
-    </div>
-
-    <div class="space-y-2">
-      <label for="duration" class="block text-sm font-medium text-gray-700"
-        >Duration (seconds):</label
-      >
-      <input
-        type="number"
-        id="duration"
-        name="duration"
-        value="60"
-        min="10"
-        max="600"
-        class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-      />
-    </div>
-
+    <!-- Rest of the form (Image Style and Video Dimensions) remains unchanged -->
     <div class="space-y-2">
       <label class="block text-sm font-medium text-gray-700"
         >Image Style:</label
@@ -181,49 +260,7 @@
     </div>
   </form>
 </div>
-
-<div class="form-group monologue-options hidden" id="monologueOptions">
-  <label for="tone" class="block text-sm font-medium text-gray-700">Tone</label>
-  <select
-    name="tone"
-    id="tone"
-    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
-  >
-    <option value="conversational">Conversational</option>
-    <option value="bold">Bold</option>
-    <option value="vulnerable">Vulnerable</option>
-    <option value="uplifting">Uplifting</option>
-    <option value="urgent">Urgent</option>
-  </select>
-
-  <label
-    for="writing_style"
-    class="block text-sm font-medium text-gray-700 mt-4"
-    >Writing Style</label
-  >
-  <select
-    name="writing_style"
-    id="writing_style"
-    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
-  >
-    <option value="direct">Direct</option>
-    <option value="poetic">Poetic</option>
-    <option value="conversational">Conversational</option>
-    <option value="punchy">Punchy</option>
-  </select>
-</div>
-
-<script>
-  document.getElementById("video_type").addEventListener("change", function () {
-    const monologueOptions = document.getElementById("monologueOptions");
-    if (this.value === "monologue") {
-      monologueOptions.classList.remove("hidden");
-    } else {
-      monologueOptions.classList.add("hidden");
-    }
-  });
-</script>
-
+<!-- Keep the existing form submission script -->
 <script>
   document.addEventListener("DOMContentLoaded", function () {
     const form = document.querySelector("form");

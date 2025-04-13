@@ -24,7 +24,7 @@ import json
 @app.route("/video/new", methods=["GET", "POST"])
 def new_video():
     if request.method == "POST":
-        topic = request.form.get("topic")
+        topic = request.form.get("main_idea")
         video_type = request.form.get("video_type", "story")
         width = int(request.form.get("width", 720))
         height = int(request.form.get("height", 1280))
@@ -32,6 +32,10 @@ def new_video():
         image_style = request.form.get("image_style", "realistic")
         tone = request.form.get("tone", "conversational")
         writing_style = request.form.get("writing_style", "direct")
+
+        # New parameters for niche videos
+        niche = request.form.get("niche")
+        main_idea = request.form.get("main_idea")
 
         video = Video(
             title=f"Video about {topic}",
@@ -44,6 +48,8 @@ def new_video():
             image_style=image_style,
             tone=tone,
             writing_style=writing_style,
+            niche=niche,  # Add new field
+            main_idea=main_idea,  # Add new field
             status="processing",
         )
 
@@ -61,12 +67,13 @@ def new_video():
                 try:
                     generator = GeminiVideoScriptGenerator()
                     script_data = generator.generate_video_script(
-                        video.topic,
-                        video.video_type,
+                        video_type=video.video_type,
                         duration=video.duration,
                         style=video.image_style,
                         tone=video.tone,
                         writing_style=video.writing_style,
+                        niche=video.niche,
+                        main_idea=video.main_idea,
                     )
 
                     if script_data:

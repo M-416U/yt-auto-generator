@@ -11,12 +11,19 @@
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
     />
     <style>
-      /* Custom styles that might not be covered by Tailwind */
+      /* Custom styles */
+      @import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap");
+
+      body {
+        font-family: "Inter", sans-serif;
+      }
+
       .flash-container {
         position: fixed;
         top: 1rem;
         right: 1rem;
         z-index: 50;
+        max-width: 24rem;
       }
 
       /* Enhanced navigation styles */
@@ -25,13 +32,14 @@
         align-items: center;
         padding: 0.75rem 1rem;
         border-radius: 0.5rem;
-        transition: all 0.2s ease;
+        transition: all 0.3s ease;
         margin-bottom: 0.5rem;
         border-left: 3px solid transparent;
       }
 
       .nav-link:hover {
         background-color: rgba(255, 255, 255, 0.1);
+        transform: translateX(3px);
       }
 
       .nav-link.active {
@@ -50,6 +58,50 @@
 
       .nav-link .nav-text {
         font-weight: 500;
+      }
+
+      /* Custom scrollbar for sidebar */
+      .sidebar-content::-webkit-scrollbar {
+        width: 5px;
+      }
+
+      .sidebar-content::-webkit-scrollbar-track {
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 10px;
+      }
+
+      .sidebar-content::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 10px;
+      }
+
+      .sidebar-content::-webkit-scrollbar-thumb:hover {
+        background: rgba(255, 255, 255, 0.3);
+      }
+
+      /* Flash message animation */
+      @keyframes slideIn {
+        from {
+          transform: translateX(100%);
+          opacity: 0;
+        }
+        to {
+          transform: translateX(0);
+          opacity: 1;
+        }
+      }
+
+      .flash {
+        animation: slideIn 0.3s ease-out forwards;
+      }
+
+      /* Main content area subtle pattern */
+      .content-pattern {
+        background-image: radial-gradient(
+          rgba(0, 0, 0, 0.03) 1px,
+          transparent 1px
+        );
+        background-size: 20px 20px;
       }
     </style>
   </head>

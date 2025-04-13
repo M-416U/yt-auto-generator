@@ -18,16 +18,15 @@ class Video(db.Model):
     )
     images = db.relationship("Image", backref="video", cascade="all, delete-orphan")
     image_style = db.Column(db.String(50), default="realistic")
+    tone = db.Column(db.String(50), default="conversational")
+    writing_style = db.Column(db.String(50), default="direct")
+    niche = db.Column(db.String(50), nullable=True)
+    main_idea = db.Column(db.Text, nullable=True)
+    uploads = db.relationship("VideoUpload", backref="video", lazy=True)
     youtube_source_id = db.Column(
         db.Integer, db.ForeignKey("you_tube_source.id"), nullable=True
     )
-    source_timestamp = db.Column(
-        db.String(50), nullable=True
-    )  # Store start/end timestamps
-    tone = db.Column(db.String(50))
-    writing_style = db.Column(db.String(50))
-    # Add relationship to track uploads
-    uploads = db.relationship("VideoUpload", backref="video", lazy=True)
+    source_timestamp = db.Column(db.String(50), nullable=True)
 
 
 class Script(db.Model):
@@ -65,7 +64,9 @@ class YouTubeSource(db.Model):
 # New model for YouTube Shorts
 class YouTubeShort(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    youtube_source_id = db.Column(db.Integer, db.ForeignKey("you_tube_source.id"), nullable=False)
+    youtube_source_id = db.Column(
+        db.Integer, db.ForeignKey("you_tube_source.id"), nullable=False
+    )
     title = db.Column(db.String(255), nullable=False)
     description = db.Column(db.Text)
     viral_potential = db.Column(db.Text)
@@ -76,10 +77,14 @@ class YouTubeShort(db.Model):
     start_time = db.Column(db.Float)
     end_time = db.Column(db.Float)
     transcript = db.Column(db.Text)
-    status = db.Column(db.String(50), default="pending")  # pending, processing, completed, failed
+    status = db.Column(
+        db.String(50), default="pending"
+    )  # pending, processing, completed, failed
     output_file = db.Column(db.String(255))
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    selected = db.Column(db.Boolean, default=True)  # To track if user selected this short
+    selected = db.Column(
+        db.Boolean, default=True
+    )  # To track if user selected this short
     # Add relationship to track uploads
     uploads = db.relationship("ShortUpload", backref="short", lazy=True)
 
@@ -88,12 +93,18 @@ class YouTubeShort(db.Model):
 class VideoUpload(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     video_id = db.Column(db.Integer, db.ForeignKey("video.id"), nullable=False)
-    account_id = db.Column(db.Integer, db.ForeignKey("you_tube_account.id"), nullable=False)
-    youtube_video_id = db.Column(db.String(255), nullable=True)  # YouTube's video ID after upload
-    upload_status = db.Column(db.String(50), default="pending")  # pending, uploading, completed, failed
+    account_id = db.Column(
+        db.Integer, db.ForeignKey("you_tube_account.id"), nullable=False
+    )
+    youtube_video_id = db.Column(
+        db.String(255), nullable=True
+    )  # YouTube's video ID after upload
+    upload_status = db.Column(
+        db.String(50), default="pending"
+    )  # pending, uploading, completed, failed
     upload_date = db.Column(db.DateTime, default=datetime.utcnow)
     error_message = db.Column(db.Text, nullable=True)
-    
+
     # Relationship to YouTube account
     account = db.relationship("YouTubeAccount", backref="video_uploads")
 
@@ -102,11 +113,17 @@ class VideoUpload(db.Model):
 class ShortUpload(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     short_id = db.Column(db.Integer, db.ForeignKey("you_tube_short.id"), nullable=False)
-    account_id = db.Column(db.Integer, db.ForeignKey("you_tube_account.id"), nullable=False)
-    youtube_video_id = db.Column(db.String(255), nullable=True)  # YouTube's video ID after upload
-    upload_status = db.Column(db.String(50), default="pending")  # pending, uploading, completed, failed
+    account_id = db.Column(
+        db.Integer, db.ForeignKey("you_tube_account.id"), nullable=False
+    )
+    youtube_video_id = db.Column(
+        db.String(255), nullable=True
+    )  # YouTube's video ID after upload
+    upload_status = db.Column(
+        db.String(50), default="pending"
+    )  # pending, uploading, completed, failed
     upload_date = db.Column(db.DateTime, default=datetime.utcnow)
     error_message = db.Column(db.Text, nullable=True)
-    
+
     # Relationship to YouTube account
     account = db.relationship("YouTubeAccount", backref="short_uploads")

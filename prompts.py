@@ -126,3 +126,63 @@ Return the response in this JSON format exactly:
 - make sure the script lines contain actual spoken text, not scenario descriptions.
 - Focus on grabbing attention fast and ending with a memorable closing line.
 """
+
+
+def generate_niche_video_prompts(
+    niche: str, tone: str, style: str, main_idea: str, duration: int
+):
+    response_format = """
+    Return the response in this JSON format exactly:" + response_format
+    {
+      "title": "Insert a short, catchy title that's optimized for virality and SEO",
+      "desc": "description to be used for the video caption — punchy and engaging",
+      "script": [
+        "Line 1 of actual spoken monologue",
+        ... more lines until it match duration needed
+      ],
+      "assets": [
+        "Detailed visual prompt for image",
+        ...
+      ]
+    }
+  """
+    niche_context = {
+        "fitness": "The script should appeal to people who want to transform their bodies and mindset through discipline and physical effort.",
+        "finance": "Speak to individuals who are trying to build wealth, escape debt, or gain financial freedom.",
+        "relationships": "Address emotional intelligence, connection, heartbreak, or personal growth in love and friendship.",
+        "mindset": "Encourage mental resilience, personal growth, self-awareness, and discipline.",
+        "business": "Speak to ambitious entrepreneurs, creators, or professionals seeking success, impact, or independence.",
+        "health": "Focus on holistic well-being, habits, self-care, and the pursuit of a healthier life.",
+        "self-worth": "Inspire people to recognize their value, reclaim confidence, and overcome self-doubt.",
+    }
+
+    context = niche_context.get(
+        niche.lower(),
+        "Make the message universally relatable and emotionally compelling.",
+    )
+
+    prompts = {}
+
+    prompts["social_video"] = (
+        f"Write a short, first-person monologue script for a voiceover video. "
+        f"The tone is {tone}, the writing style is {style}, and the main idea is: {main_idea}. "
+        f"Estimated duration: {duration} seconds. {context} "
+        f"Start with a strong hook, build tension or clarity in the body, and end with a bold, memorable conclusion.",
+        response_format,
+    )
+
+    prompts["generative_ai"] = (
+        f"Create a 4-second visual AI video that reflects this concept: {main_idea}. "
+        f"Make the visuals align with a {tone} tone and a {style} aesthetic. "
+        f"Target audience: people interested in {niche}. Include emotional impact through color, motion, or metaphor.",
+        response_format,
+    )
+
+    prompts["clip_summary"] = (
+        f"Summarize a long-form video into a short-form social clip (under {duration} seconds spoken). "
+        f"Topic: {main_idea}. Style: {style}. Tone: {tone}. "
+        f"Niche: {niche}. Hook viewers immediately with a scroll-stopping line, and deliver a quick punch of insight or emotion.",
+        response_format,
+    )
+
+    return prompts

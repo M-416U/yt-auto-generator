@@ -15,7 +15,13 @@ def generate_script(video_id):
         # Generate script using Gemini
         generator = GeminiVideoScriptGenerator()
         script_data = generator.generate_video_script(
-            video.topic, video.video_type, duration=video.duration
+            video_type=video.video_type,
+            duration=video.duration,
+            style=video.image_style,
+            tone=video.tone,
+            writing_style=video.writing_style,
+            niche=video.niche,
+            main_idea=video.main_idea,
         )
 
         if not script_data:
@@ -23,19 +29,16 @@ def generate_script(video_id):
             return redirect(url_for("generate_script", video_id=video.id))
 
         # Update video with real title and description
-        video.title = script_data.get("title", f"Video about {video.topic}")
+        video.title = script_data.get("title", f"Video about {video.main_idea}")
         video.description = script_data.get("desc", "No description available")
 
         # Save script to database
         if video.script:
-            # Update existing script
             video.script.content = json.dumps(script_data)
         else:
-            # Create new script
             script = Script(video_id=video.id, content=json.dumps(script_data))
             db.session.add(script)
 
-        # Update video status
         video.status = "images_pending"
         db.session.commit()
 
