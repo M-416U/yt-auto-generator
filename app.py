@@ -68,10 +68,11 @@ def index():
 from routes.script_routes import *
 from routes.image_routes import *
 from routes.audio_routes import *
-from routes.video_routes import *
 from routes.youtube_routes import *
-from routes.shorts_routes import *
-from routes.upload_routes import *  # Import the new upload routes
+
+from routes.upload_routes import *
+from routes.video import *
+from routes.shorts import *
 
 
 @app.template_filter("file_exists")
