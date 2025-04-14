@@ -27,6 +27,12 @@ class Video(db.Model):
         db.Integer, db.ForeignKey("you_tube_source.id"), nullable=True
     )
     source_timestamp = db.Column(db.String(50), nullable=True)
+    # New fields for video paths and progress tracking
+    video_path = db.Column(db.String(255), nullable=True)
+    video_with_subs_path = db.Column(db.String(255), nullable=True)
+    progress = db.Column(db.Integer, default=0)  # Progress percentage (0-100)
+    error_message = db.Column(db.Text, nullable=True)
+    last_updated = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
 
 class Script(db.Model):

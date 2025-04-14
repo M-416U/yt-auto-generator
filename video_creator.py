@@ -6,6 +6,8 @@ import animations
 from PIL import Image as PILImage
 from utils import resize_and_crop_image
 import numpy as np
+import threading
+from datetime import datetime
 
 
 # Helper functions
@@ -17,11 +19,19 @@ def get_video_path(video_id, with_subs=False):
     return os.path.normpath(os.path.join(app.config["OUTPUT_FOLDER"], filename))
 
 
+def get_relative_video_path(video_id, with_subs=False):
+    """Get the relative path for a video file to store in database"""
+    filename = (
+        f"video_{video_id}_with_subs.mp4" if with_subs else f"video_{video_id}.mp4"
+    )
+    return os.path.join("output", filename)
+
+
 def get_audio_path(relative_path):
     """Get the absolute path for an audio file"""
     if not relative_path:
         return None
-    filename = os.path.basename(relative_path.replace("output_audio/", ""))
+    filename = os.path.basename(relative_path)
     return os.path.normpath(os.path.join(app.config["OUTPUT_AUDIOS"], filename))
 
 
@@ -29,7 +39,7 @@ def get_image_path(relative_path):
     """Get the absolute path for an image file"""
     if not relative_path:
         return None
-    filename = os.path.basename(relative_path.replace("output_images/", ""))
+    filename = os.path.basename(relative_path)
     return os.path.normpath(os.path.join(app.config["OUTPUT_IMAGES"], filename))
 
 
@@ -50,8 +60,14 @@ def create_video_from_images_and_audio(video):
         clips = []
         width = video.width
         height = video.height
+        
+        # Update progress to 10%
+        video.progress = 10
+        video.last_updated = datetime.utcnow()
+        db.session.commit()
 
-        for image in images:
+        total_images = len(images)
+        for i, image in enumerate(images):
             image_path = get_image_path(image.file_path)
             if not image_path or not os.path.exists(image_path):
                 continue
@@ -84,6 +100,13 @@ def create_video_from_images_and_audio(video):
                     )
 
                 clips.append(animated_clip)
+                
+                # Update progress (10-50% based on image processing)
+                progress = 10 + int((i / total_images) * 40)
+                video.progress = progress
+                video.last_updated = datetime.utcnow()
+                db.session.commit()
+                
             except Exception as e:
                 print(f"Error processing image {image_path}: {str(e)}")
                 continue
@@ -91,13 +114,29 @@ def create_video_from_images_and_audio(video):
         if not clips:
             raise Exception("No valid clips could be created")
 
+        # Update progress to 50%
+        video.progress = 50
+        video.last_updated = datetime.utcnow()
+        db.session.commit()
+
         # Create final video
         final_clip = concatenate_videoclips(clips, method="compose")
         audio_clip = AudioFileClip(audio_file)
         final_clip = final_clip.set_audio(audio_clip)
 
+        # Update progress to 60%
+        video.progress = 60
+        video.last_updated = datetime.utcnow()
+        db.session.commit()
+
         # Save video
         video_filename = get_video_path(video.id)
+        
+        # Update progress to 70%
+        video.progress = 70
+        video.last_updated = datetime.utcnow()
+        db.session.commit()
+        
         final_clip.write_videofile(
             video_filename,
             fps=24,
@@ -106,6 +145,12 @@ def create_video_from_images_and_audio(video):
             threads=4,  # Utilize multiple CPU cores
             logger=None,  # Suppress moviepy logs
         )
+
+        # Save the video path to the database
+        video.video_path = get_relative_video_path(video.id)
+        video.progress = 100
+        video.last_updated = datetime.utcnow()
+        db.session.commit()
 
         # Cleanup resources
         final_clip.close()
@@ -159,10 +204,15 @@ def cleanup_temp_files(video, keep_final=True):
         if keep_final:
             if os.path.exists(video_with_subs_path) and os.path.exists(video_path):
                 os.remove(video_path)
+                # Keep only the path with subtitles in the database
+                video.video_path = None
         else:
             for path in [video_path, video_with_subs_path]:
                 if os.path.exists(path):
                     os.remove(path)
+            # Clear both paths from the database
+            video.video_path = None
+            video.video_with_subs_path = None
 
         db.session.commit()
 
@@ -172,27 +222,51 @@ def cleanup_temp_files(video, keep_final=True):
         raise
 
 
-def cleanup_all_temp_files():
-    """Clean up all temporary files in the temp directories"""
+def create_video_in_background(video_id):
+    """Create video in a background thread"""
+    from models.models import Video  # Import here to avoid circular imports
+
     try:
-        # Clean up temp directories
-        temp_dirs = [
-            app.config["UPLOAD_FOLDER"],
-            app.config["OUTPUT_FOLDER"],
-            app.config["OUTPUT_IMAGES"],
-            app.config["OUTPUT_AUDIOS"],
-            app.config["TEMP_FOLDER"],
-        ]
+        # Create application context for this thread
+        with app.app_context():
+            video = Video.query.get(video_id)
+            if not video:
+                print(f"Error: Video with ID {video_id} not found")
+                return
 
-        for directory in temp_dirs:
-            if os.path.exists(directory):
-                for filename in os.listdir(directory):
-                    file_path = os.path.join(directory, filename)
-                    try:
-                        if os.path.isfile(file_path):
-                            os.remove(file_path)
-                    except Exception as e:
-                        print(f"Error removing file {file_path}: {str(e)}")
+            # Update status to processing
+            video.status = "processing"
+            video.progress = 0
+            video.error_message = None
+            video.last_updated = datetime.utcnow()
+            db.session.commit()
 
+            # Create the video
+            create_video_from_images_and_audio(video)
+
+            # Update status to captions_pending
+            video.status = "captions_pending"
+            db.session.commit()
+
+            print(f"Video {video_id} created successfully in background")
     except Exception as e:
-        print(f"Error during cleanup_all_temp_files: {str(e)}")
+        # Update status to error
+        try:
+            with app.app_context():
+                video = Video.query.get(video_id)
+                if video:
+                    video.status = "error"
+                    video.error_message = str(e)[:255]  # Limit error message length
+                    video.last_updated = datetime.utcnow()
+                    db.session.commit()
+        except Exception as inner_e:
+            print(f"Error updating video status: {str(inner_e)}")
+        print(f"Error creating video {video_id} in background: {str(e)}")
+
+
+def start_video_creation_background(video):
+    """Start video creation in a background thread"""
+    thread = threading.Thread(target=create_video_in_background, args=(video.id,))
+    thread.daemon = True
+    thread.start()
+    return thread

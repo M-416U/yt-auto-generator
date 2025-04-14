@@ -1,0 +1,155 @@
+{% extends 'base.html' %} 
+
+{% block content %}
+<div class="bg-white shadow-md rounded-lg p-6">
+  <h2 class="text-2xl font-bold mb-6 text-gray-800">
+    Video Creation Status for "{{ video.title }}"
+  </h2>
+
+  <div class="space-y-6">
+    <div
+      id="status-container"
+      class="bg-blue-50 border border-blue-200 rounded-lg p-6"
+    >
+      <div class="flex items-center mb-4">
+        <div id="status-icon" class="mr-4">
+          <div
+            class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"
+          ></div>
+        </div>
+        <div>
+          <h3 id="status-title" class="text-lg font-medium text-gray-800">
+            Processing Video
+          </h3>
+          <p id="status-message" class="text-gray-600">
+            Your video is being created. This may take several minutes.
+          </p>
+          <p id="last-updated" class="text-sm text-gray-500 mt-1">
+            Last updated: <span>{{ video.last_updated.strftime('%Y-%m-%d %H:%M:%S') if video.last_updated else 'Just now' }}</span>
+          </p>
+        </div>
+      </div>
+
+      <div class="w-full bg-gray-200 rounded-full h-2.5 mb-4">
+        <div
+          id="progress-bar"
+          class="bg-blue-600 h-2.5 rounded-full transition-all duration-500"
+          style="width: {{ video.progress }}%"
+        ></div>
+      </div>
+      
+      <p id="progress-text" class="text-sm text-gray-600 mb-4">
+        Progress: <span>{{ video.progress }}%</span> complete
+      </p>
+
+      <p class="text-sm text-gray-500">
+        This page will automatically update. You can safely leave this page and come back later to check the status.
+      </p>
+    </div>
+
+    <div id="action-container" class="{% if video.status != 'captions_pending' and video.status != 'error' %}hidden{% endif %}">
+      <a
+        id="next-step-btn"
+        href="{% if video.status == 'captions_pending' %}{{ url_for('add_captions', video_id=video.id) }}{% else %}#{% endif %}"
+        class="{% if video.status != 'captions_pending' %}hidden{% endif %} inline-flex items-center px-6 py-3 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+      >
+        <i class="fas fa-arrow-right mr-2"></i>Continue to Add Captions
+      </a>
+
+      <a
+        href="{{ url_for('create_video', video_id=video.id) }}"
+        class="{% if video.status != 'error' %}ml-4{% endif %} inline-flex items-center px-6 py-3 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
+      >
+        <i class="fas fa-redo mr-2"></i>Try Again
+      </a>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const statusContainer = document.getElementById("status-container");
+    const statusIcon = document.getElementById("status-icon");
+    const statusTitle = document.getElementById("status-title");
+    const statusMessage = document.getElementById("status-message");
+    const progressBar = document.getElementById("progress-bar");
+    const progressText = document.getElementById("progress-text");
+    const lastUpdatedSpan = document.getElementById("last-updated").querySelector("span");
+    const actionContainer = document.getElementById("action-container");
+    const nextStepBtn = document.getElementById("next-step-btn");
+    
+    // Initialize based on current status
+    updateUIForStatus("{{ video.status }}", {{ video.progress }}, "{{ video.error_message or '' }}");
+
+    function updateUIForStatus(status, progress, errorMessage) {
+      // Update progress bar
+      progressBar.style.width = progress + "%";
+      progressText.querySelector("span").textContent = progress + "%";
+      
+      if (status === "processing") {
+        // Still processing
+        statusIcon.innerHTML = '<div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>';
+        statusTitle.textContent = "Processing Video";
+        statusMessage.textContent = "Your video is being created. This may take several minutes.";
+        statusContainer.className = "bg-blue-50 border border-blue-200 rounded-lg p-6";
+        progressBar.className = "bg-blue-600 h-2.5 rounded-full transition-all duration-500";
+        actionContainer.classList.add("hidden");
+      } 
+      else if (status === "captions_pending") {
+        // Video created successfully
+        statusIcon.innerHTML = '<i class="fas fa-check-circle text-green-500 text-3xl"></i>';
+        statusTitle.textContent = "Video Created Successfully!";
+        statusMessage.textContent = "Your video is ready. You can now add captions.";
+        statusContainer.className = "bg-green-50 border border-green-200 rounded-lg p-6";
+        progressBar.className = "bg-green-600 h-2.5 rounded-full transition-all duration-500";
+        progressBar.style.width = "100%";
+        progressText.querySelector("span").textContent = "100%";
+        actionContainer.classList.remove("hidden");
+        nextStepBtn.classList.remove("hidden");
+      }
+      else if (status === "error") {
+        // Error occurred
+        statusIcon.innerHTML = '<i class="fas fa-exclamation-circle text-red-500 text-3xl"></i>';
+        statusTitle.textContent = "Error Creating Video";
+        statusMessage.textContent = errorMessage || "An unknown error occurred.";
+        statusContainer.className = "bg-red-50 border border-red-200 rounded-lg p-6";
+        progressBar.className = "bg-red-600 h-2.5 rounded-full transition-all duration-500";
+        actionContainer.classList.remove("hidden");
+        nextStepBtn.classList.add("hidden");
+      }
+    }
+
+    function checkStatus() {
+      fetch('{{ url_for("check_video_status", video_id=video.id) }}')
+        .then((response) => response.json())
+        .then((data) => {
+          // Update last updated time
+          if (data.last_updated) {
+            lastUpdatedSpan.textContent = data.last_updated;
+          }
+          
+          // Update UI based on status
+          updateUIForStatus(data.status, data.progress, data.message);
+          
+          if (data.status === "processing") {
+            // Still processing, check again in 5 seconds
+            setTimeout(checkStatus, 5000);
+          } 
+          else if (data.status === "captions_pending") {
+            // Video created successfully
+            nextStepBtn.href = data.redirect_url;
+          }
+        })
+        .catch((error) => {
+          console.error("Error checking status:", error);
+          setTimeout(checkStatus, 10000); // Try again in 10 seconds if there's an error
+        });
+    }
+
+    // Start checking status if currently processing
+    if ("{{ video.status }}" === "processing") {
+      setTimeout(checkStatus, 5000);
+    }
+  });
+</script>
+{% endblock %}

@@ -113,6 +113,7 @@ def delete_video(video_id):
             )
             if os.path.exists(audio_path):
                 os.remove(audio_path)
+                video.script.audio_file = None
         except Exception as e:
             print(f"Error removing audio file: {str(e)}")
 
@@ -128,20 +129,22 @@ def delete_video(video_id):
             except Exception as e:
                 print(f"Error removing image file: {str(e)}")
 
-    # Delete final video if exists
-    final_video_path = os.path.join(
-        app.config["OUTPUT_FOLDER"], f"video_{video.id}.mp4"
-    )
-    final_video_with_subs_path = os.path.join(
-        app.config["OUTPUT_FOLDER"], f"video_{video.id}_with_subs.mp4"
-    )
-
-    for path in [final_video_path, final_video_with_subs_path]:
-        if os.path.exists(path):
-            try:
+    # Delete video files using stored paths
+    if video.video_path:
+        try:
+            path = os.path.join(app.config["OUTPUT_FOLDER"], os.path.basename(video.video_path))
+            if os.path.exists(path):
                 os.remove(path)
-            except Exception as e:
-                print(f"Error removing video file: {str(e)}")
+        except Exception as e:
+            print(f"Error removing video file: {str(e)}")
+            
+    if video.video_with_subs_path:
+        try:
+            path = os.path.join(app.config["OUTPUT_FOLDER"], os.path.basename(video.video_with_subs_path))
+            if os.path.exists(path):
+                os.remove(path)
+        except Exception as e:
+            print(f"Error removing video with subs file: {str(e)}")
 
     db.session.delete(video)
     db.session.commit()
