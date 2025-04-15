@@ -57,22 +57,15 @@ with app.app_context():
     db.create_all()
 
 
-# Routes
-@app.route("/")
-def index():
-    videos = Video.query.order_by(Video.created_at.desc()).all()
-    return render_template("index.html", videos=videos)
-
-
 # Import routes for each step
-from routes.script_routes import *
-from routes.image_routes import *
-from routes.audio_routes import *
-from routes.youtube_routes import *
-
-from routes.upload_routes import *
+from routes.script import *
+from routes.image import *
+from routes.audio import *
+from routes.youtube import *
+from routes.upload import *
 from routes.video import *
 from routes.shorts import *
+from routes.index import *
 
 
 @app.template_filter("file_exists")

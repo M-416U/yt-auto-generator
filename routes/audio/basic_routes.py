@@ -1,24 +1,10 @@
-from flask import (
-    render_template,
-    request,
-    redirect,
-    url_for,
-    flash,
-    send_from_directory,
-)
+from flask import render_template, request, redirect, url_for, flash
 from app import app
 from extensions import db
 from models.models import Video
 from generate_audio import text_to_speech
 import json
 import os
-
-
-@app.route("/output_audio/<path:filename>")
-def serve_audio(filename):
-    return send_from_directory(
-        os.path.abspath(app.config["OUTPUT_AUDIOS"]), filename, mimetype="audio/wav"
-    )
 
 
 @app.route("/video/<int:video_id>/generate_audio", methods=["GET", "POST"])

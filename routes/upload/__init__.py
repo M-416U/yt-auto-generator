@@ -1,0 +1,1 @@
+from . import video_routes, api_routes, view_routes

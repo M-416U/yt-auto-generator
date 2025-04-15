@@ -1,4 +1,4 @@
-from flask import render_template, request, redirect, url_for, flash, jsonify
+from flask import request, jsonify
 from app import app
 from extensions import db
 from models.models import Video, YouTubeShort, VideoUpload, ShortUpload
@@ -8,50 +8,6 @@ from googleapiclient.discovery import build
 from googleapiclient.http import MediaFileUpload
 import os
 import threading
-
-
-# Route to show upload form for a video
-@app.route("/video/upload/<int:video_id>")
-def video_upload_form(video_id):
-    video = Video.query.get_or_404(video_id)
-    accounts = YouTubeAccount.query.all()
-
-    # Check if video file exists
-    video_file_path = os.path.join(
-        app.config["OUTPUT_FOLDER"], f"video_{video.id}_with_subs.mp4"
-    )
-    if not os.path.exists(video_file_path):
-        flash("Video file not found. Please generate the video first.", "error")
-        return redirect(url_for("index"))
-
-    return render_template(
-        "upload/video_upload.html",
-        content=video,
-        accounts=accounts,
-        is_short=False,
-        content_type="video",
-    )
-
-
-# Route to show upload form for a short
-@app.route("/short/upload/<int:short_id>")
-def short_upload_form(short_id):
-    short = YouTubeShort.query.get_or_404(short_id)
-    accounts = YouTubeAccount.query.all()
-    # Check if short file exists
-    if not short.output_file or not os.path.exists(
-        os.path.abspath(app.config["OUTPUT_FOLDER"]) + "/" + short.output_file
-    ):
-        flash("Short video file not found. Please generate the short first.", "error")
-        return redirect(url_for("all_shorts_sources"))
-
-    return render_template(
-        "upload/video_upload.html",
-        content=short,
-        accounts=accounts,
-        is_short=True,
-        content_type="short",
-    )
 
 
 # Unified API endpoint to upload videos/shorts to YouTube
@@ -193,12 +149,13 @@ def process_content_upload(
             if not account:
                 raise Exception("YouTube account not found")
 
-            # Create credentials object
+            # Create credentials object with all required fields
             credentials = Credentials(
                 token=account.access_token,
                 refresh_token=account.refresh_token,
-                token_uri="https://oauth2.googleapis.com/token",
-                client_id=account.user_id,
+                token_uri=account.token_uri,
+                client_id=account.client_id,
+                client_secret=account.client_secret,
                 scopes=["https://www.googleapis.com/auth/youtube.upload"],
             )
 
@@ -245,16 +202,3 @@ def process_content_upload(
             upload.error_message = str(e)
             db.session.commit()
             print(f"Upload error: {str(e)}")
-
-
-# Route to view all uploads
-@app.route("/uploads")
-def view_uploads():
-    video_uploads = VideoUpload.query.order_by(VideoUpload.upload_date.desc()).all()
-    short_uploads = ShortUpload.query.order_by(ShortUpload.upload_date.desc()).all()
-
-    return render_template(
-        "upload/uploads_list.html",
-        video_uploads=video_uploads,
-        short_uploads=short_uploads,
-    )

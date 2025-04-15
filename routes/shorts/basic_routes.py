@@ -5,7 +5,6 @@ from models.models import YouTubeSource, YouTubeShort
 from summaries_yt import get_transcript, process_transcript_parts
 from utils import extract_json_from_response
 import json
-import os
 import re
 from threading import Thread
 
@@ -57,38 +56,60 @@ def process_shorts_segments(source_id, num_parts):
             response = process_transcript_parts(source.transcript, num_parts=num_parts)
             data = extract_json_from_response(response)
 
-            if not data or "viral_segments" not in data:
+            if not data:
+                print(f"Failed to extract valid JSON for source ID: {source_id}")
+                source.status = "failed"
+                source.error_message = "Failed to parse response data"
+                db.session.commit()
+                return
+                
+            if "viral_segments" not in data:
+                print(f"No viral segments found in response for source ID: {source_id}")
+                source.status = "failed"
+                source.error_message = "No viral segments found in response"
+                db.session.commit()
                 return
 
             # Update source with title if available
             if "overall_theme" in data:
                 source.title = data["overall_theme"]
+                
+            # Mark source as processed
+            source.status = "processed"
 
             # Create short entries for each segment
             for segment in data["viral_segments"]:
-                # Parse timestamp
-                timestamp = segment.get("timestamp", {})
-                start_time = float(timestamp.get("start", 0))
-                end_time = float(timestamp.get("end", 60))
+                try:
+                    # Parse timestamp
+                    timestamp = segment.get("timestamp", {})
+                    start_time = float(timestamp.get("start", 0))
+                    end_time = float(timestamp.get("end", 60))
 
-                short = YouTubeShort(
-                    youtube_source_id=source.id,
-                    title=segment.get("title", "Untitled Short"),
-                    description=segment.get("desc", ""),
-                    viral_potential=segment.get("viral_potential", ""),
-                    duration_seconds=segment.get("duration_seconds", 0),
-                    hashtags=json.dumps(segment.get("hashtags", [])),
-                    hook=segment.get("hook", ""),
-                    viral_score=int(segment.get("score", 0)),
-                    start_time=start_time,
-                    end_time=end_time,
-                    transcript=segment.get("transcript", ""),
-                )
-                db.session.add(short)
+                    short = YouTubeShort(
+                        youtube_source_id=source.id,
+                        title=segment.get("title", "Untitled Short"),
+                        description=segment.get("desc", ""),
+                        viral_potential=segment.get("viral_potential", ""),
+                        duration_seconds=segment.get("duration_seconds", 0),
+                        hashtags=json.dumps(segment.get("hashtags", [])),
+                        hook=segment.get("hook", ""),
+                        viral_score=int(segment.get("score", 0)),
+                        start_time=start_time,
+                        end_time=end_time,
+                        transcript=segment.get("transcript", ""),
+                    )
+                    db.session.add(short)
+                except (ValueError, TypeError) as e:
+                    print(f"Error processing segment: {str(e)}")
+                    # Continue with other segments even if one fails
 
             db.session.commit()
         except Exception as e:
             print(f"Error processing shorts segments: {str(e)}")
+            # Mark source as failed
+            source.status = "failed"
+            source.error_message = str(e)
+            db.session.commit()
 
 
 @app.route("/shorts/all")

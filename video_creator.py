@@ -1,5 +1,5 @@
 from app import app, db
-from app import Image
+from models.models import Image
 import os
 from moviepy.editor import *
 import animations
@@ -60,7 +60,7 @@ def create_video_from_images_and_audio(video):
         clips = []
         width = video.width
         height = video.height
-        
+
         # Update progress to 10%
         video.progress = 10
         video.last_updated = datetime.utcnow()
@@ -100,13 +100,13 @@ def create_video_from_images_and_audio(video):
                     )
 
                 clips.append(animated_clip)
-                
+
                 # Update progress (10-50% based on image processing)
                 progress = 10 + int((i / total_images) * 40)
                 video.progress = progress
                 video.last_updated = datetime.utcnow()
                 db.session.commit()
-                
+
             except Exception as e:
                 print(f"Error processing image {image_path}: {str(e)}")
                 continue
@@ -131,12 +131,12 @@ def create_video_from_images_and_audio(video):
 
         # Save video
         video_filename = get_video_path(video.id)
-        
+
         # Update progress to 70%
         video.progress = 70
         video.last_updated = datetime.utcnow()
         db.session.commit()
-        
+
         final_clip.write_videofile(
             video_filename,
             fps=24,

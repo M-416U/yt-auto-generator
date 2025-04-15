@@ -81,20 +81,37 @@ def resize_and_crop_image(image: Image.Image, width: int, height: int) -> Image.
 def extract_json_from_response(text: str) -> dict:
     """
     Tries to cleanly extract JSON from a Text, even if it's embedded in markdown or has extra explanation.
+    Returns the parsed JSON dict or None if parsing fails.
     """
+    if not text:
+        print("Error parsing JSON: Empty text input")
+        return None
+        
     try:
         # Attempt to extract JSON inside triple backticks ```json ... ```
         json_match = re.search(r"```(?:json)?\s*(\{.*?\})\s*```", text, re.DOTALL)
         if json_match:
-            return json.loads(json_match.group(1))
+            json_str = json_match.group(1)
+            # Clean up any potential issues with the JSON string
+            json_str = json_str.strip()
+            return json.loads(json_str)
 
         # Fallback: Try to extract the first full JSON object in the text
         json_start = text.find("{")
         json_end = text.rfind("}")
         if json_start != -1 and json_end != -1:
             cleaned_json = text[json_start : json_end + 1]
+            # Try to fix common JSON issues
+            cleaned_json = cleaned_json.replace("'", '"')  # Replace single quotes with double quotes
+            cleaned_json = re.sub(r',\s*}', '}', cleaned_json)  # Remove trailing commas
             return json.loads(cleaned_json)
+    except json.JSONDecodeError as e:
+        print(f"Error parsing JSON: {str(e)}")
+        # Try to print a snippet of the problematic JSON for debugging
+        if 'json_str' in locals():
+            error_context = json_str[max(0, e.pos-30):min(len(json_str), e.pos+30)]
+            print(f"Context around error: ...{error_context}...")
     except Exception as e:
-        print("Error parsing JSON:", str(e))
+        print(f"Unexpected error parsing JSON: {str(e)}")
 
     return None

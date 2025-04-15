@@ -96,12 +96,12 @@ class YouTubeShort(db.Model):
 
 
 # New model to track video uploads to YouTube
+# In VideoUpload model
 class VideoUpload(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     video_id = db.Column(db.Integer, db.ForeignKey("video.id"), nullable=False)
-    account_id = db.Column(
-        db.Integer, db.ForeignKey("you_tube_account.id"), nullable=False
-    )
+    # Change the foreign key reference to match the actual table name
+    account_id = db.Column(db.Integer, db.ForeignKey("you_tube_account.id"), nullable=True)
     youtube_video_id = db.Column(
         db.String(255), nullable=True
     )  # YouTube's video ID after upload
@@ -116,12 +116,12 @@ class VideoUpload(db.Model):
 
 
 # New model to track short uploads to YouTube
+# In ShortUpload model
 class ShortUpload(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     short_id = db.Column(db.Integer, db.ForeignKey("you_tube_short.id"), nullable=False)
-    account_id = db.Column(
-        db.Integer, db.ForeignKey("you_tube_account.id"), nullable=False
-    )
+    # Change the foreign key reference to match the actual table name
+    account_id = db.Column(db.Integer, db.ForeignKey("you_tube_account.id"), nullable=True)
     youtube_video_id = db.Column(
         db.String(255), nullable=True
     )  # YouTube's video ID after upload
