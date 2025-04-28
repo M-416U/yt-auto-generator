@@ -1,6 +1,7 @@
 from flask import jsonify
 from app import app
 from models.youtube_account import YouTubeAccount, YouTubeStats
+import json  # Add this import
 
 
 # Add new route for fetching chart data
@@ -16,20 +17,23 @@ def youtube_stats(account_id):
         .all()
     )
 
-    # Get the most recent video stats
     latest_stats = stats[0] if stats else None
-    video_stats = latest_stats.videos if latest_stats else []
+    video_stats = (
+        json.loads(latest_stats.videos) if latest_stats and latest_stats.videos else []
+    )
 
-    return jsonify({
-        "stats": [
-            {
-                "date": stat.recorded_at.strftime("%Y-%m-%d"),
-                "subscribers": stat.subscriber_count,
-                "views": stat.view_count,
-                "video_count": stat.video_count
-            }
-            for stat in reversed(stats)
-        ],
-        "videos": video_stats,
-        "total_videos": latest_stats.video_count if latest_stats else 0
-    })
+    return jsonify(
+        {
+            "stats": [
+                {
+                    "date": stat.recorded_at.strftime("%Y-%m-%d"),
+                    "subscribers": stat.subscriber_count,
+                    "views": stat.view_count,
+                    "video_count": stat.video_count,
+                }
+                for stat in reversed(stats)
+            ],
+            "videos": video_stats,
+            "total_videos": latest_stats.video_count if latest_stats else 0,
+        }
+    )

@@ -5,7 +5,10 @@ from models.models import Video, Image
 from image_generator import AIImageGenerator
 import os
 
-@app.route("/video/<int:video_id>/generate_single_image/<int:image_id>", methods=["POST"])
+
+@app.route(
+    "/video/<int:video_id>/generate_single_image/<int:image_id>", methods=["POST"]
+)
 def generate_single_image(video_id, image_id):
     video = Video.query.get_or_404(video_id)
     image = Image.query.get_or_404(image_id)
@@ -15,7 +18,10 @@ def generate_single_image(video_id, image_id):
     image_file = os.path.join(app.config["OUTPUT_IMAGES"], image_filename)
 
     success = image_generator.download_image(
-        image.prompt, image_file, image_style=video.image_style
+        image.prompt,
+        image_file,
+        image_style=video.image_style,
+        use_ir=True,
     )
 
     if success:
@@ -57,7 +63,10 @@ def regenerate_image(video_id, image_id):
     image.prompt = new_prompt
 
     success = image_generator.download_image(
-        new_prompt, image_file, image_style=video.image_style
+        new_prompt,
+        image_file,
+        image_style=video.image_style,
+        use_ir=True,
     )
 
     if success:

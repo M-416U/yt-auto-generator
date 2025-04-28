@@ -6,6 +6,7 @@ from image_generator import AIImageGenerator
 import json
 import os
 
+
 # Step 2: Image Generation
 @app.route("/video/<int:video_id>/generate_images", methods=["GET", "POST"])
 def generate_images(video_id):
@@ -39,7 +40,10 @@ def generate_images(video_id):
 
             # Generate image
             success = image_generator.download_image(
-                asset_description, image_file, image_style=video.image_style
+                asset_description,
+                image_file,
+                image_style=video.image_style,
+                use_ir=True,
             )
 
             # Get animation type from form
