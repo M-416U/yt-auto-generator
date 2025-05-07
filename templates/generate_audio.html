@@ -66,36 +66,41 @@
         <div class="w-full mb-4">
           <div class="mb-4">
             <div class="border-b border-gray-200">
-              <nav class="-mb-px flex" aria-label="Tabs">
+              <nav class="-mb-px flex flex-wrap" aria-label="Tabs">
+                {% for lang_code, lang_data in voice_overs.items() %}
                 <button
                   type="button"
-                  onclick="switchTab('female')"
-                  class="tab-btn active w-1/2 py-2 px-4 text-center border-b-2 font-medium text-sm"
-                  id="female-tab"
+                  onclick="switchTab('{{ lang_code }}')"
+                  class="tab-btn {% if loop.first %}active{% endif %} py-2 px-4 text-center border-b-2 font-medium text-sm"
+                  id="{{ lang_code }}-tab"
                 >
-                  <i class="fas fa-female mr-2"></i>Female Voices
+                  <i class="fas fa-language mr-2"></i>{{ lang_data.language_name
+                  }}
                 </button>
-                <button
-                  type="button"
-                  onclick="switchTab('male')"
-                  class="tab-btn w-1/2 py-2 px-4 text-center border-b-2 font-medium text-sm"
-                  id="male-tab"
-                >
-                  <i class="fas fa-male mr-2"></i>Male Voices
-                </button>
+                {% endfor %}
               </nav>
             </div>
           </div>
 
-          <div id="female-voices" class="tab-content">
+          {% for lang_code, lang_data in voice_overs.items() %}
+          <div
+            id="{{ lang_code }}-voices"
+            class="tab-content {% if not loop.first %}hidden{% endif %}"
+          >
+            <input
+              type="hidden"
+              name="language"
+              value="{{ lang_code }}"
+              id="selected-language"
+            />
             <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-              {% for name, id in speakers.female.items() %}
+              {% for voice in lang_data.voices %}
               <div class="voice-option">
                 <input
                   type="radio"
                   name="speaker"
-                  id="{{ id }}"
-                  value="{{ id }}"
+                  id="{{ voice.id }}"
+                  value="{{ voice.id }}"
                   class="hidden peer"
                   {%
                   if
@@ -103,9 +108,10 @@
                   %}checked{%
                   endif
                   %}
+                  data-lang="{{ lang_code }}"
                 />
                 <label
-                  for="{{ id }}"
+                  for="{{ voice.id }}"
                   class="block p-4 border rounded-lg cursor-pointer hover:bg-blue-50 peer-checked:bg-blue-100 peer-checked:border-blue-500"
                 >
                   <div class="flex items-center">
@@ -113,286 +119,119 @@
                       class="fas fa-user-circle text-2xl text-gray-400 mr-3"
                     ></i>
                     <div>
-                      <div class="font-medium">{{ name }}</div>
-                      <div class="text-sm text-gray-500">ID: {{ id }}</div>
+                      <div class="font-medium">{{ voice.name }}</div>
+                      <div class="text-xs text-gray-500">
+                        {{ voice.description }}
+                      </div>
                     </div>
                   </div>
+                  {% if voice.sample %}
+                  <div class="mt-2">
+                    <audio controls class="w-full h-8">
+                      <source src="{{ voice.sample }}" type="audio/mp3" />
+                    </audio>
+                  </div>
+                  {% endif %}
                 </label>
               </div>
               {% endfor %}
             </div>
           </div>
-
-          <div id="male-voices" class="tab-content hidden">
-            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-              {% for name, id in speakers.male.items() %}
-              <div class="voice-option">
-                <input
-                  type="radio"
-                  name="speaker"
-                  id="{{ id }}"
-                  value="{{ id }}"
-                  class="hidden peer"
-                />
-                <label
-                  for="{{ id }}"
-                  class="block p-4 border rounded-lg cursor-pointer hover:bg-blue-50 peer-checked:bg-blue-100 peer-checked:border-blue-500"
-                >
-                  <div class="flex items-center">
-                    <i
-                      class="fas fa-user-circle text-2xl text-gray-400 mr-3"
-                    ></i>
-                    <div>
-                      <div class="font-medium">{{ name }}</div>
-                      <div class="text-sm text-gray-500">ID: {{ id }}</div>
-                    </div>
-                  </div>
-                </label>
-              </div>
-              {% endfor %}
-            </div>
-          </div>
+          {% endfor %}
         </div>
 
-        <p class="mb-4 text-gray-700">
-          Click the button below to generate audio from the script:
-        </p>
-        <button
-          type="submit"
-          id="generate-btn"
-          class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-        >
-          <i class="fas fa-microphone mr-2"></i>Generate Audio
-        </button>
-        <div id="loading" class="hidden mt-4 text-center">
-          <div
-            class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"
-          ></div>
-          <p class="mt-2 text-gray-600">
-            Generating audio... This may take a moment.
-          </p>
+        <div class="w-full flex justify-end">
+          <button
+            type="submit"
+            class="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+          >
+            <i class="fas fa-magic mr-2"></i>Generate Audio
+          </button>
         </div>
       </div>
     </form>
     {% endif %}
-    <!-- Regenerate Modal -->
-    <div
-      id="regenerateModal"
-      class="fixed inset-0 bg-black bg-opacity-50 hidden z-50"
-    >
-      <div class="flex items-center justify-center min-h-screen p-4">
-        <div
-          class="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-hidden"
-        >
-          <div class="p-6">
-            <div class="flex justify-between items-center mb-4">
-              <h3 class="text-lg font-medium">Select Voice for Regeneration</h3>
-              <button
-                onclick="closeRegenerateModal()"
-                class="text-gray-400 hover:text-gray-600"
-              >
-                <i class="fas fa-times"></i>
-              </button>
-            </div>
-
-            <form id="regenerateForm" method="POST" class="space-y-4">
-              <div class="border-b border-gray-200 mb-4">
-                <nav class="-mb-px flex">
-                  <button
-                    type="button"
-                    onclick="switchRegenerateTab('female')"
-                    class="regenerate-tab-btn active w-1/2 py-2 px-4 text-center border-b-2 font-medium text-sm"
-                    id="regenerate-female-tab"
-                  >
-                    <i class="fas fa-female mr-2"></i>Female Voices
-                  </button>
-                  <button
-                    type="button"
-                    onclick="switchRegenerateTab('male')"
-                    class="regenerate-tab-btn w-1/2 py-2 px-4 text-center border-b-2 font-medium text-sm"
-                    id="regenerate-male-tab"
-                  >
-                    <i class="fas fa-male mr-2"></i>Male Voices
-                  </button>
-                </nav>
-              </div>
-
-              <div class="overflow-y-auto max-h-[50vh]">
-                <div
-                  id="regenerate-female-voices"
-                  class="regenerate-tab-content"
-                >
-                  <div class="grid grid-cols-2 gap-4">
-                    {% for name, id in speakers.female.items() %}
-                    <div class="voice-option">
-                      <input
-                        type="radio"
-                        name="speaker"
-                        id="regenerate-{{ id }}"
-                        value="{{ id }}"
-                        class="hidden peer"
-                      />
-                      <label
-                        for="regenerate-{{ id }}"
-                        class="block p-3 border rounded-lg cursor-pointer hover:bg-blue-50 peer-checked:bg-blue-100 peer-checked:border-blue-500"
-                      >
-                        <div class="flex items-center">
-                          <i
-                            class="fas fa-user-circle text-xl text-gray-400 mr-2"
-                          ></i>
-                          <div>
-                            <div class="font-medium text-sm">{{ name }}</div>
-                            <div class="text-xs text-gray-500">
-                              ID: {{ id }}
-                            </div>
-                          </div>
-                        </div>
-                      </label>
-                    </div>
-                    {% endfor %}
-                  </div>
-                </div>
-
-                <div
-                  id="regenerate-male-voices"
-                  class="regenerate-tab-content hidden"
-                >
-                  <div class="grid grid-cols-2 gap-4">
-                    {% for name, id in speakers.male.items() %}
-                    <div class="voice-option">
-                      <input
-                        type="radio"
-                        name="speaker"
-                        id="regenerate-{{ id }}"
-                        value="{{ id }}"
-                        class="hidden peer"
-                      />
-                      <label
-                        for="regenerate-{{ id }}"
-                        class="block p-3 border rounded-lg cursor-pointer hover:bg-blue-50 peer-checked:bg-blue-100 peer-checked:border-blue-500"
-                      >
-                        <div class="flex items-center">
-                          <i
-                            class="fas fa-user-circle text-xl text-gray-400 mr-2"
-                          ></i>
-                          <div>
-                            <div class="font-medium text-sm">{{ name }}</div>
-                            <div class="text-xs text-gray-500">
-                              ID: {{ id }}
-                            </div>
-                          </div>
-                        </div>
-                      </label>
-                    </div>
-                    {% endfor %}
-                  </div>
-                </div>
-              </div>
-
-              <div
-                class="flex justify-end space-x-3 pt-4 border-t border-gray-200"
-              >
-                <button
-                  type="button"
-                  onclick="closeRegenerateModal()"
-                  class="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  id="regenerate-btn"
-                  class="px-4 py-2 bg-yellow-500 text-white rounded-md hover:bg-yellow-600"
-                >
-                  Regenerate Audio
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      </div>
-    </div>
-    <style>
-      .tab-btn,
-      .regenerate-tab-btn {
-        @apply text-gray-500 border-transparent hover:text-gray-700 hover:border-gray-300;
-      }
-      .tab-btn.active,
-      .regenerate-tab-btn.active {
-        @apply border-blue-500 text-blue-600;
-      }
-      .voice-option label {
-        @apply transition-all duration-200;
-      }
-    </style>
-
-    <script>
-      document.addEventListener("DOMContentLoaded", function () {
-        const form = document.querySelector("form");
-        const generateBtn = document.getElementById("generate-btn");
-        const loading = document.getElementById("loading");
-
-        if (form) {
-          form.addEventListener("submit", function () {
-            generateBtn.disabled = true;
-            generateBtn.classList.add("opacity-50");
-            loading.classList.remove("hidden");
-          });
-        }
-      });
-
-      function switchTab(tab) {
-        // Update tab buttons
-        document.querySelectorAll(".tab-btn").forEach((btn) => {
-          btn.classList.remove("active");
-        });
-        document.getElementById(`${tab}-tab`).classList.add("active");
-
-        // Show/hide content
-        document.querySelectorAll(".tab-content").forEach((content) => {
-          content.classList.add("hidden");
-        });
-        document.getElementById(`${tab}-voices`).classList.remove("hidden");
-      }
-
-      function showRegenerateModal() {
-        const modal = document.getElementById("regenerateModal");
-        modal.classList.remove("hidden");
-        // Select first female voice by default
-        const firstVoice = document.querySelector(
-          '#regenerate-female-voices input[type="radio"]'
-        );
-        if (firstVoice) {
-          firstVoice.checked = true;
-        }
-      }
-
-      function closeRegenerateModal() {
-        document.getElementById("regenerateModal").classList.add("hidden");
-      }
-
-      function switchRegenerateTab(tab) {
-        // Update tab buttons
-        document.querySelectorAll(".regenerate-tab-btn").forEach((btn) => {
-          btn.classList.remove("active");
-        });
-        document
-          .getElementById(`regenerate-${tab}-tab`)
-          .classList.add("active");
-
-        // Show/hide content
-        document
-          .querySelectorAll(".regenerate-tab-content")
-          .forEach((content) => {
-            content.classList.add("hidden");
-          });
-        document
-          .getElementById(`regenerate-${tab}-voices`)
-          .classList.remove("hidden");
-      }
-
-      // Remove the old regenerateAudio function as it's replaced by the modal
-    </script>
-    {% endblock %}
   </div>
 </div>
+
+<!-- Regenerate Audio Modal -->
+<div
+  id="regenerate-modal"
+  class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50"
+>
+  <div class="bg-white rounded-lg p-6 max-w-md w-full">
+    <h3 class="text-xl font-bold mb-4">Regenerate Audio</h3>
+    <p class="mb-4">
+      Are you sure you want to regenerate the audio? This will replace the
+      current audio file.
+    </p>
+    <div class="flex justify-end space-x-4">
+      <button
+        onclick="hideRegenerateModal()"
+        class="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-100"
+      >
+        Cancel
+      </button>
+      <form method="POST">
+        <button
+          type="submit"
+          class="px-4 py-2 bg-yellow-500 text-white rounded-md hover:bg-yellow-600"
+        >
+          Regenerate
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+  function showRegenerateModal() {
+    document.getElementById("regenerate-modal").classList.remove("hidden");
+  }
+
+  function hideRegenerateModal() {
+    document.getElementById("regenerate-modal").classList.add("hidden");
+  }
+
+  function switchTab(tabId) {
+    // Hide all tab contents
+    document.querySelectorAll(".tab-content").forEach((tab) => {
+      tab.classList.add("hidden");
+    });
+
+    // Show the selected tab content
+    document.getElementById(`${tabId}-voices`).classList.remove("hidden");
+
+    // Update active tab button
+    document.querySelectorAll(".tab-btn").forEach((btn) => {
+      btn.classList.remove("active");
+      btn.classList.remove("border-blue-500");
+      btn.classList.remove("text-blue-600");
+      btn.classList.add("border-transparent");
+      btn.classList.add("text-gray-500");
+    });
+
+    document.getElementById(`${tabId}-tab`).classList.add("active");
+    document.getElementById(`${tabId}-tab`).classList.add("border-blue-500");
+    document.getElementById(`${tabId}-tab`).classList.add("text-blue-600");
+
+    // Update the hidden language input
+    document.getElementById("selected-language").value = tabId;
+
+    // Select the first voice in the selected language tab
+    const firstVoice = document.querySelector(`input[data-lang="${tabId}"]`);
+    if (firstVoice) {
+      firstVoice.checked = true;
+    }
+  }
+
+  // Add active class styling
+  document.addEventListener("DOMContentLoaded", function () {
+    const activeTab = document.querySelector(".tab-btn.active");
+    if (activeTab) {
+      activeTab.classList.add("border-blue-500");
+      activeTab.classList.add("text-blue-600");
+    }
+  });
+</script>
+{% endblock %}

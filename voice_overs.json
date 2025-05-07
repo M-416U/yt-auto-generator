@@ -1,0 +1,72 @@
+{
+  "en": {
+    "language_name": "English",
+    "voices": [
+      {
+        "id": "1",
+        "name": "english voice over 1",
+        "description": "",
+        "sample": "/static/samples/en/1.mp3"
+      },
+      {
+        "id": "2",
+        "name": "english voice over 2",
+        "description": "",
+        "sample": "/static/samples/en/2.mp3"
+      },
+      {
+        "id": "3",
+        "name": "english voice over 3",
+        "description": "",
+        "sample": "/static/samples/en/3.mp3"
+      },
+      {
+        "id": "4",
+        "name": "english voice over 4",
+        "description": "",
+        "sample": "/static/samples/en/4.mp3"
+      },
+      {
+        "id": "5",
+        "name": "english voice over 5",
+        "description": "",
+        "sample": "/static/samples/en/5.mp3"
+      }
+    ]
+  },
+  "ar": {
+    "language_name": "العربية",
+    "voices": [
+      {
+        "id": "1",
+        "name": "صوت عربي 1",
+        "description": "",
+        "sample": "/static/samples/ar/1.mp3"
+      },
+      {
+        "id": "2",
+        "name": "صوت عربي 2",
+        "description": "",
+        "sample": "/static/samples/ar/2.mp3"
+      },
+      {
+        "id": "3",
+        "name": "صوت عربي 3",
+        "description": "",
+        "sample": "/static/samples/ar/3.mp3"
+      },
+      {
+        "id": "4",
+        "name": "صوت عربي 4",
+        "description": "",
+        "sample": "/static/samples/ar/4.mp3"
+      },
+      {
+        "id": "5",
+        "name": "صوت عربي 5",
+        "description": "",
+        "sample": "/static/samples/ar/5.mp3"
+      }
+    ]
+  }
+}
