@@ -33,14 +33,14 @@ def generate_shorts(source_id):
 
     # Get caption settings from form
     caption_settings = {
-        'add_captions': request.form.get('add_captions') == 'on',
-        'max_words': int(request.form.get('max_words', 1)),
-        'font_size': int(request.form.get('font_size', 40)),
-        'position': request.form.get('position', 'bottom'),
-        'enable_highlight': request.form.get('enable_highlight') == 'on',
-        'highlight_type': request.form.get('highlight_type', ''),
-        'highlight_color': request.form.get('highlight_color', ''),
-        'custom_highlight_color': request.form.get('custom_highlight_color', '')
+        "add_captions": request.form.get("add_captions") == "on",
+        "max_words": int(request.form.get("max_words", 1)),
+        "font_size": int(request.form.get("font_size", 40)),
+        "position": request.form.get("position", "bottom"),
+        "enable_highlight": request.form.get("enable_highlight") == "on",
+        "highlight_type": request.form.get("highlight_type", ""),
+        "highlight_color": request.form.get("highlight_color", ""),
+        "custom_highlight_color": request.form.get("custom_highlight_color", ""),
     }
 
     # Start background processing
@@ -98,25 +98,67 @@ def process_generate_shorts(source_id, caption_settings=None):
                 result = subprocess.run(command, capture_output=True, text=True)
 
                 if os.path.exists(output_file):
+                    # Convert to mobile dimensions (9:16 aspect ratio)
+                    mobile_output_file = os.path.join(
+                        app.config["OUTPUT_FOLDER"],
+                        f"short_{short.id}_{video_id}_mobile.mp4",
+                    )
+
+                    # Use ffmpeg to resize to 1080x1920 (9:16 ratio) with background padding
+                    mobile_command = [
+                        "ffmpeg",
+                        "-i",
+                        output_file,
+                        "-vf",
+                        "scale=1080:1920:force_original_aspect_ratio=decrease,pad=1080:1920:(ow-iw)/2:(oh-ih)/2:black",
+                        "-c:a",
+                        "copy",
+                        mobile_output_file,
+                    ]
+
+                    mobile_result = subprocess.run(
+                        mobile_command, capture_output=True, text=True
+                    )
+
+                    if os.path.exists(mobile_output_file):
+                        # Remove the original file to save space
+                        try:
+                            os.remove(output_file)
+                        except Exception as e:
+                            print(f"Error removing original file: {str(e)}")
+
+                        # Update the output file path for further processing
+                        output_file = mobile_output_file
+                    else:
+                        print(
+                            f"Failed to convert to mobile dimensions: {mobile_result.stderr}"
+                        )
+
                     # Process captions if requested
-                    if caption_settings and caption_settings.get('add_captions'):
+                    if caption_settings and caption_settings.get("add_captions"):
                         try:
                             # Determine highlight color
                             highlight_color = None
-                            if caption_settings.get('enable_highlight'):
-                                highlight_type = caption_settings.get('highlight_type')
-                                if highlight_type == 'custom':
-                                    highlight_color = caption_settings.get('custom_highlight_color')
+                            if caption_settings.get("enable_highlight"):
+                                highlight_type = caption_settings.get("highlight_type")
+                                if highlight_type == "custom":
+                                    highlight_color = caption_settings.get(
+                                        "custom_highlight_color"
+                                    )
                                 else:
-                                    highlight_color = caption_settings.get('highlight_color')
-                            
+                                    highlight_color = caption_settings.get(
+                                        "highlight_color"
+                                    )
+
                             # Generate captions
                             srt_path = os.path.join(
                                 app.config["OUTPUT_FOLDER"], f"short_{short.id}.srt"
                             )
                             generate_captions(
                                 media_file=output_file,
-                                max_words_per_caption=caption_settings.get('max_words', 1),
+                                max_words_per_caption=caption_settings.get(
+                                    "max_words", 1
+                                ),
                                 highlight_color=highlight_color,
                                 caption_format="srt",
                                 output_filename=srt_path,
@@ -124,16 +166,17 @@ def process_generate_shorts(source_id, caption_settings=None):
 
                             # Burn captions into video
                             output_with_captions = os.path.join(
-                                app.config["OUTPUT_FOLDER"], f"short_{short.id}_{video_id}_with_subs.mp4"
+                                app.config["OUTPUT_FOLDER"],
+                                f"short_{short.id}_{video_id}_with_subs.mp4",
                             )
                             burn_subtitles_to_video(
                                 video_path=output_file,
                                 srt_path=srt_path,
                                 output_path=output_with_captions,
-                                font_size=caption_settings.get('font_size', 40),
-                                position=caption_settings.get('position', 'bottom'),
+                                font_size=caption_settings.get("font_size", 40),
+                                position=caption_settings.get("position", "bottom"),
                             )
-                            
+
                             # If caption generation was successful, use the new file
                             if os.path.exists(output_with_captions):
                                 # Remove the original file to save space
@@ -141,20 +184,24 @@ def process_generate_shorts(source_id, caption_settings=None):
                                     os.remove(output_file)
                                 except Exception as e:
                                     print(f"Error removing original file: {str(e)}")
-                                
+
                                 # Update the output file path
-                                short.output_file = os.path.basename(output_with_captions)
+                                short.output_file = os.path.basename(
+                                    output_with_captions
+                                )
                             else:
                                 # If caption generation failed, keep the original file
                                 short.output_file = os.path.basename(output_file)
                         except Exception as e:
-                            print(f"Error adding captions to short {short.id}: {str(e)}")
+                            print(
+                                f"Error adding captions to short {short.id}: {str(e)}"
+                            )
                             # If caption generation fails, still keep the original video
                             short.output_file = os.path.basename(output_file)
                     else:
                         # No captions requested, use the original file
                         short.output_file = os.path.basename(output_file)
-                    
+
                     short.status = "completed"
                 else:
                     short.status = "failed"

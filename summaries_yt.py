@@ -1,4 +1,5 @@
 import json
+import os
 import google.generativeai as genai
 from youtube_transcript_api import YouTubeTranscriptApi
 from langdetect import detect
@@ -72,7 +73,7 @@ def split_transcript_into_parts(transcript, max_chars=5000):
     return parts
 
 
-genai.configure(api_key="AIzaSyDs0ghsn-0UviJ4K0zUFxcWi17X_rmm_AQ")
+genai.configure(api_key=os.environ.get("GOOGLE_API_KEY"))
 
 generation_config = {
     "temperature": 1,
